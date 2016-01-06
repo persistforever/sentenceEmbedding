@@ -14,7 +14,6 @@ if __name__ == '__main__':
     print "w2v_file : ", w2v_file
     print "stopwords_file: ", stopwords_file
     
-    
     cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
     cr_scope = [1, 5000]
     
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):
-        searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
     else:
         mode = sys.argv[2]
         print "mode: ", mode

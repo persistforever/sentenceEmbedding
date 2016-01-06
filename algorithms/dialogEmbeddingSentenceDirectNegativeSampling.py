@@ -8,6 +8,7 @@ from  layers.sentenceEmbeddingNN import SentenceEmbeddingNN
 from algorithms.algorithm import algorithm
 import util
 import config
+
 class sentenceEmbeddingDirectNegativeSampling(algorithm):
 	def __init__(self, input_params=None):
 		rng = numpy.random.RandomState(2355)

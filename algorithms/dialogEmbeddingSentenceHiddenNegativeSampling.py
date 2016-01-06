@@ -86,6 +86,8 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
         print "Data loaded."
         index = T.lscalar("index")
         print "Compiling computing graph."
+#         from theano import ProfileMode
+#         profmode = ProfileMode(optimizer='fast_run', linker=theano.gof.OpWiseCLinker())
         train_model = theano.function(
              [index],
              [errorSum],
@@ -96,7 +98,8 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
                             self._sentenceWordCount: sentenceWordNums,
                             isAStartSentence: isAStartSentenceNums
                         },
-            allow_input_downcast=True
+            allow_input_downcast=True,
+#             mode=profmode
          )
         print "Compiled."
         return train_model, n_batches

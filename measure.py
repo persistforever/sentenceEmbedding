@@ -8,6 +8,7 @@ import codecs
 import heapq
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 import cPickle
+import theano
 from loadDialog import CorpusReader
 
 def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
@@ -32,7 +33,8 @@ def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_fil
                 print "Saving parameters."
                 saveParamsVal(param_path, model.getParameters())
                 print "Saved."
-        
+                
+                
 def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
     class sentenceScorePair(object):
         def __init__(self, priority, sentence):

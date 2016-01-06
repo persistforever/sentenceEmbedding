@@ -19,7 +19,7 @@ class sentenceEmbeddingDirectAverage(algorithm):
         
         # for list-type data
         self._layer0 = SentenceEmbeddingNN(self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount, rng, wordEmbeddingDim=200, \
-                                                         sentenceLayerNodesNum=50, \
+                                                         sentenceLayerNodesNum=1000, \
                                                          sentenceLayerNodesSize=[5, 200])
         
         self._average_layer  = sentenceEmbeddingAverage(self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount, rng, wordEmbeddingDim=200)
