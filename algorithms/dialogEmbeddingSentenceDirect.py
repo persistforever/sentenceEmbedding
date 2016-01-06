@@ -6,6 +6,8 @@ import numpy
 from  layers.sentenceEmbeddingNN import SentenceEmbeddingNN
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 from algorithms.algorithm import algorithm
+import util
+import config
 
 class sentenceEmbeddingDirect(algorithm):
 	def __init__(self, input_params=None):
@@ -23,7 +25,7 @@ class sentenceEmbeddingDirect(algorithm):
 		semanicTransformW = theano.shared(
 			numpy.asarray(
 				rng.uniform(low=-0.2, high=0.2, size=(self._layer0.outputDimension, self._layer0.outputDimension)),
-				dtype=theano.config.floatX
+				dtype=config.globalFloatType()
 			),
 			borrow=True
 		)
@@ -36,7 +38,6 @@ class sentenceEmbeddingDirect(algorithm):
 		isAStartSentence = T.ivector("isAStartSentence")
 		iass = 1 - isAStartSentence[(self._dialogSentenceCount[0] + 1):self._dialogSentenceCount[-1]]
 		
-		import util
 		error = util.getError(self._nextSentence[:-1], self._layer0.output[1:], errorType)
 		
 		error = T.dot(iass, error)
@@ -50,7 +51,7 @@ class sentenceEmbeddingDirect(algorithm):
 		]
 		print "Loading data."
 		dialogMatrixes, docSentenceNums, sentenceWordNums, _, _ = cr.getCorpus(cr_scope, 4)
-		dialogMatrixes = algorithm.transToTensor(dialogMatrixes, theano.config.floatX)
+		dialogMatrixes = algorithm.transToTensor(dialogMatrixes, config.globalFloatType())
 		docSentenceNums = algorithm.transToTensor(docSentenceNums, numpy.int32)
 		sentenceWordNums = algorithm.transToTensor(sentenceWordNums, numpy.int32)
 		

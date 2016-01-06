@@ -8,6 +8,7 @@ from layers.sentenceEmbeddingAverage import sentenceEmbeddingAverage
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 
 from algorithms.algorithm import algorithm
+import util
 
 class sentenceEmbeddingDirectAverage(algorithm):
     def __init__(self, input_params=None):
@@ -41,7 +42,6 @@ class sentenceEmbeddingDirectAverage(algorithm):
         isAStartSentence = T.ivector("isAStartSentence")
         iass = 1 - isAStartSentence[(self._dialogSentenceCount[0] + 1):self._dialogSentenceCount[-1]]
         
-        import util
         error = util.getError(self._nextSentence[:-1], self._average_layer.output[1:], errorType)
         
         error = T.dot(iass, error)

@@ -6,6 +6,8 @@ import codecs
 import numpy as np
 from codecs import decode
 import string
+from util.rubbish import isRubbishSentence
+
 class CorpusReader:
     pool = ThreadPool(12)
     labels = None
@@ -178,9 +180,7 @@ def loadDocuments(filename, charset="utf-8"):
         if (not sentence):
             continue;
         
-        if(u"【 系统 消息 】" in sentence or u"您好 , 您 已 接入"  in sentence or u"很 高兴 为 您 服务" in sentence \
-           or u"祝 您" in sentence or u"谢谢" in sentence  or u"客气" in sentence or u"感谢" in sentence or u"本次 服务 进行 评价" in sentence\
-            or u"可以 帮 到 您 的"  in sentence or u"随时 联系 我们"  in sentence):
+        if isRubbishSentence(sentence):
             continue
         
 #         if ((state != "9"  or state == "2") and sentence == ""):

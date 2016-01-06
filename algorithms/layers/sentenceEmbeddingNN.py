@@ -3,6 +3,7 @@ import theano
 import theano.tensor.signal.downsample as downsample
 import theano.tensor.signal.conv as conv
 import numpy
+import config
 
 class SentenceEmbeddingNN:
     
@@ -14,7 +15,7 @@ class SentenceEmbeddingNN:
                           wordEmbeddingDim,
                           sentenceLayerNodesNum=2,
                           sentenceLayerNodesSize=(2, 2),
-                          datatype=theano.config.floatX,
+                          datatype=config.globalFloatType(),
                           mode="average_exc_pad"):
         self.__wordEmbeddingDim = wordEmbeddingDim
         self.__sentenceLayerNodesNum = sentenceLayerNodesNum

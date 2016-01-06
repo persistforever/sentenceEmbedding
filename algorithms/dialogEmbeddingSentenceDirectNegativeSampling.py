@@ -6,7 +6,8 @@ import numpy
 from  layers.sentenceEmbeddingNN import SentenceEmbeddingNN
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 from algorithms.algorithm import algorithm
-
+import util
+import config
 class sentenceEmbeddingDirectNegativeSampling(algorithm):
 	def __init__(self, input_params=None):
 		rng = numpy.random.RandomState(2355)
@@ -22,7 +23,7 @@ class sentenceEmbeddingDirectNegativeSampling(algorithm):
 		semanicTransformW = theano.shared(
 			numpy.asarray(
 				rng.uniform(low=-0.2, high=0.2, size=(self._layer0.outputDimension, self._layer0.outputDimension)),
-				dtype=theano.config.floatX
+				dtype=config.globalFloatType()
 			),
 			borrow=True
 		)
@@ -44,7 +45,6 @@ class sentenceEmbeddingDirectNegativeSampling(algorithm):
 		
 		availableIndex = iass.nonzero()
 		
-		import util
 		error = util.getError(self._nextSentence[:-1][availableIndex], self._layer0.output[1:][availableIndex], errorType)
 		errorNegative = util.getError(self._nextSentence[:-1][availableIndex], self._layer0.output[-1:0:-1][availableIndex], errorType)
 		
@@ -75,9 +75,9 @@ class sentenceEmbeddingDirectNegativeSampling(algorithm):
 		
 		for i in xrange(1, len(docSentenceNums)):
 			if docSentenceNums[i] - docSentenceNums[i - 1] != 2:
-				raise "Must only contains couple sentences for each dialog."
+				raise Exception("Must only contains couple sentences for each dialog.")
 		
-		dialogMatrixes = algorithm.transToTensor(dialogMatrixes, theano.config.floatX)
+		dialogMatrixes = algorithm.transToTensor(dialogMatrixes, config.globalFloatType())
 		docSentenceNums = algorithm.transToTensor(docSentenceNums, numpy.int32)
 		sentenceWordNums = algorithm.transToTensor(sentenceWordNums, numpy.int32)
 		

@@ -7,6 +7,8 @@ import numpy
 from  layers.sentenceEmbeddingNN import SentenceEmbeddingNN
 from layers.sentenceEmbeddingAverage import sentenceEmbeddingAverage
 from algorithms.algorithm import algorithm
+import util
+import config
 
 class sentenceEmbeddingHiddenAverage(algorithm):
     
@@ -37,7 +39,6 @@ class sentenceEmbeddingHiddenAverage(algorithm):
         isAStartSentence = T.ivector("isAStartSentence")
         iass = 1 - isAStartSentence[(self._dialogSentenceCount[0] + 1):self._dialogSentenceCount[-1]]
         
-        import util
         error = util.getError(self._nextSentence[:-1], self._average_layer.output[1:], errorType)
         
         error = T.dot(iass, error)
@@ -51,7 +52,7 @@ class sentenceEmbeddingHiddenAverage(algorithm):
         ]
         print "Loading data."
         dialogMatrixes, docSentenceNums, sentenceWordNums, _, _ = cr.getCorpus(cr_scope, 4)
-        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, theano.config.floatX)
+        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, config.globalFloatType())
         docSentenceNums = algorithm.transToTensor(docSentenceNums, numpy.int32)
         sentenceWordNums = algorithm.transToTensor(sentenceWordNums, numpy.int32)
         

@@ -6,6 +6,8 @@ import theano
 import numpy
 from  layers.sentenceEmbeddingNN import SentenceEmbeddingNN
 from algorithms.algorithm import algorithm
+import util
+import config
 
 class sentenceEmbeddingHiddenNegativeSampling(algorithm):
     
@@ -20,7 +22,7 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
                                                          sentenceLayerNodesNum=2000, \
                                                          sentenceLayerNodesSize=[5, 200],
                                                          mode="max")
-        layer1 = HiddenLayer(   
+        layer1 = HiddenLayer(
             rng,
             input=layer0.output,
             n_in=layer0.outputDimension,
@@ -41,7 +43,6 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
         
         availableIndex = iass.nonzero()
         
-        import util
         error = util.getError(self._nextSentence[:-1][availableIndex], self._layer0.output[1:][availableIndex], errorType)
         errorNegative = util.getError(self._nextSentence[:-1][availableIndex], self._layer0.output[-1:0:-1][availableIndex], errorType)
         
@@ -62,7 +63,12 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
         ]
         print "Loading data."
         dialogMatrixes, docSentenceNums, sentenceWordNums, _, _ = cr.getCorpus(cr_scope, 4)
-        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, theano.config.floatX)
+        
+        for i in xrange(1, len(docSentenceNums)):
+            if docSentenceNums[i] - docSentenceNums[i - 1] != 2:
+                raise Exception("Must only contains couple sentences for each dialog.")
+        
+        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, config.globalFloatType())
         docSentenceNums = algorithm.transToTensor(docSentenceNums, numpy.int32)
         sentenceWordNums = algorithm.transToTensor(sentenceWordNums, numpy.int32)
         

@@ -1,5 +1,6 @@
 import theano
 import theano.tensor.signal.downsample as downsample
+import config
 
 class sentenceEmbeddingAverage:
     
@@ -9,7 +10,7 @@ class sentenceEmbeddingAverage:
                           sentenceWordCount,
                           rng,
                           wordEmbeddingDim,
-                          datatype=theano.config.floatX):
+                          datatype=config.globalFloatType()):
         self.__wordEmbeddingDim = wordEmbeddingDim
         self.__MAXDIM = 10000
         self.__datatype = datatype

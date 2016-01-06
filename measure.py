@@ -1,7 +1,6 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from numpy import array
-from scipy.cluster.vq import vq, kmeans2, whiten
+from scipy.cluster.vq import kmeans2, whiten
 import os
 import string
 import numpy

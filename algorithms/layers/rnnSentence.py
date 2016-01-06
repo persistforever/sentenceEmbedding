@@ -2,13 +2,13 @@ import numpy
 
 import theano
 from theano import tensor as T, printing
-from numpy import dtype
 from theano.ifelse import ifelse
+import config
 
 class RNNSentence(object):
     ''' elman neural net model '''
     def __init__(self, dataset, docSentenceCount, numberHiddenNodes, dimensionSentence,
-                           isAStartSentence, datatype=theano.config.floatX):
+                           isAStartSentence, datatype=config.globalFloatType()):
         
         self.outputDimension = numberHiddenNodes
         
