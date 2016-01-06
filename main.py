@@ -8,6 +8,13 @@ if __name__ == '__main__':
     w2v_file = data_folder + "/w2vFlat"
     stopwords_file = "data/punct"
     
+    print "dataset: ", dataset
+    print "data_folder: ", data_folder
+    print "text_file : ", text_file
+    print "w2v_file : ", w2v_file
+    print "stopwords_file: ", stopwords_file
+    
+    
     cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
     cr_scope = [1, 5000]
     
@@ -42,12 +49,14 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/hidden_negative.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingHiddenNegativeSampling(params)
-        
-    searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+    
+    print "param_path: ", param_path
+    
     if(len(sys.argv) < 3):
         searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
     else:
         mode = sys.argv[2]
+        print "mode: ", mode
         if(mode == "test"):
             searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
         elif(mode == "train"):
