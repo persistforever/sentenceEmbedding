@@ -13,8 +13,10 @@ if __name__ == '__main__':
     
     param_path = None
     model = None
-    
-    alg = "negativeSamplingHidden"
+    if len(sys.argv) < 2:
+        alg = "negativeSamplingHidden"
+    else:
+        alg = sys.argv[1]
     if(alg == "averageHidden"):
         from algorithms.dialogEmbeddingSentenceHiddenAverage import sentenceEmbeddingHiddenAverage
         param_path = data_folder + "/model/average_hidden.model"
@@ -40,11 +42,12 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/hidden_negative.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingHiddenNegativeSampling(params)
+        
     searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-    if(len(sys.argv) == 1):
+    if(len(sys.argv) < 3):
         searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
     else:
-        mode = sys.argv[1]
+        mode = sys.argv[2]
         if(mode == "test"):
             searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
         elif(mode == "train"):
