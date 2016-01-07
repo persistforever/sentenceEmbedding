@@ -14,7 +14,7 @@ def isRubbishSentence(sentence):
     if globals()['__keywordList'] == None:
         __init()
     flag = False
-    for s in __keywordList:
+    for s in globals()['__keywordList']:
         if s in sentence:
             flag = True
             break

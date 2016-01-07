@@ -15,7 +15,8 @@ def relativeEntropy(baseLabel, relativeLabel):
     return e
 
 def entropy(labels):
-    A = np.asarray(labels)
+#     print labels
+    A = np.asarray(labels, dtype = np.int)
     A = A.flatten()
     counts = np.bincount(A) # needs small, non-negative ints
     counts = counts[counts > 0]

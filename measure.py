@@ -8,8 +8,10 @@ import codecs
 import heapq
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 import cPickle
-import theano
 from loadDialog import CorpusReader
+
+import time
+from util.entropy import relativeEntropy
 
 def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
     train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=5)
@@ -105,26 +107,37 @@ def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_fil
         count += step
 
         
-def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
+def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, method="kmeans"):
     test_fun = model.getTestFunction(params)
     
     embeddingList = list()
-    sentenceList = list()
+    sentence_label_list = list()
+    
+    print "Calculate embeddings."
+    t0 = time.time()
     with codecs.open("data/measure/base", "r", "utf-8", "ignore") as f:
         for line in f:
             sentence, sentence_label = line.split("\t")
-            matrix, snum, _, _ = cr.getSentenceMatrix(sentence, 0, 4)
+#             print sentence
+            info = cr.getSentenceMatrix(sentence, 0, 4)
+            if info is None:
+                continue 
+            matrix, snum, _, _ = info
             baseSentenceEmbedding, _, _ = test_fun(matrix, [0, 1], [0, snum])
-            embeddingList.append(baseSentenceEmbedding)
-            sentenceList.append(sentence_label)
+            embeddingList.append(baseSentenceEmbedding[0])
+            sentence_label_list.append(string.atoi(sentence_label))
     
-    feature_matrix = numpy.array(embeddingList)
-    whitened = whiten(feature_matrix)
-    cluster_num = 625
-    _, cluster_labels = kmeans2(whitened, cluster_num)
-    from util.entropy import relativeEntropy
-    e = relativeEntropy(sentence_label, cluster_labels)
-    print e
+    print "Start to cluster."
+    import util.cluster
+    if method == "kmeans":
+        cluster_labels = util.cluster.kmeans(embeddingList, 625)
+    elif method == "spectral":
+        cluster_labels = util.cluster.spectral(embeddingList, 625)
+        
+    t1 = time.time()
+    e = relativeEntropy(sentence_label_list, cluster_labels)
+    print "method: ", method, "\tparam path: ", param_path, "\tchaos: ", e
+    print "cost time: ", t1 - t0
     return e
     
 def saveParamsVal(path, params):
@@ -162,5 +175,5 @@ if __name__ == '__main__':
     param_path = data_folder + "/model/hidden_negative.model"
     params = loadParamsVal(param_path)
     model = sentenceEmbeddingHiddenNegativeSampling(params)
-    
-    train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+#     train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+    chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
