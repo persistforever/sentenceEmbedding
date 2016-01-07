@@ -15,7 +15,7 @@ def __init():
 #     p =printing.Print("l2")
 #     l2 = p(l2)
     
-    l2_inv2 = T.inv(l2).dimshuffle(['x',0])
+    l2_inv2 = T.inv(l2).dimshuffle(['x', 0])
 #     p =printing.Print("l2_inv2")
 #     l2_inv2 = p(l2_inv2)
     
@@ -28,45 +28,36 @@ def __init():
 #     p =printing.Print("l2_inv")
 #     l2_inv = p(l2_inv)
     
-    affinty = T.mul(dot_mul, l2_inv)
-    globals()['__affinty_fun']  = theano.function(
+    affinty = (T.mul(dot_mul, l2_inv) + 1) / 2
+    globals()['__affinty_fun'] = theano.function(
              [dataset],
              [affinty],
              allow_input_downcast=True
              )
     
-    delta = 0.1
-    
-    affinty_gaussian = T.exp(- (1-affinty) ** 2 / (2. * delta ** 2))
-
-    globals()['__affinty_fun_gaussian']  = theano.function(
-             [dataset],
-             [affinty_gaussian],
-             allow_input_downcast=True
-             )
+#     delta = 0.1
+#     affinty_gaussian = T.exp(- (1-affinty) ** 2 / (2. * delta ** 2))
+#     globals()['__affinty_fun_gaussian']  = theano.function(
+#              [dataset],
+#              [affinty_gaussian],
+#              allow_input_downcast=True
+#              )
 
 def compute_affinity_matrix(dataset):
     dataset = np.asarray(dataset, dtype=config.globalFloatType())
     if globals()['__affinty_fun'] == None:
         __init()
-    f  =globals()['__affinty_fun']
-    return f(dataset)
-
-def compute_affinity_gaussian_matrix(dataset):
-    dataset = np.asarray(dataset, dtype=config.globalFloatType())
-    if globals()['__affinty_fun_gaussian'] == None:
-        __init()
-    f  =globals()['__affinty_fun_gaussian']
+    f = globals()['__affinty_fun']
     return f(dataset)
 
 
 if __name__ == '__main__':
-    testres = compute_affinity_matrix([ [1,2,3,4,5],\
-                                                                 [2,3,4,5,5],
-                                                                 [1,4,5,6,7],
-                                                                 [1,2,3,4,5]])
-    testres = compute_affinity_gaussian_matrix([ [1,2,3,4,5],\
-                                                                 [2,3,4,5,5],
-                                                                 [1,4,5,6,7],
-                                                                 [1,2,3,4,5]])
+    testres = compute_affinity_matrix([ [1, 2, 3, 4, 5], \
+                                                                 [2, 3, 4, 5, 5],
+                                                                 [1, 4, 5, 6, 7],
+                                                                 [1, 2, 3, 4, 5]])
+    testres = compute_affinity_gaussian_matrix([ [1, 2, 3, 4, 5], \
+                                                                 [2, 3, 4, 5, 5],
+                                                                 [1, 4, 5, 6, 7],
+                                                                 [1, 2, 3, 4, 5]])
     print testres

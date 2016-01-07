@@ -3,10 +3,11 @@ import numpy
 def spectral(dataset, n_cluster = 625):
     import util.affinity_matrix
     feature_matrix = numpy.asarray(dataset)
-    mode = "GPUAffinity"
+#     mode = "GPUAffinity"
+    mode = "CPU"
     if mode == "GPUAffinity":
         print "Calculate affinity."
-        affinty_matrix = util.affinity_matrix.compute_affinity_gaussian_matrix(feature_matrix)[0]
+        affinty_matrix = util.affinity_matrix.compute_affinity_matrix(feature_matrix)[0]
         print "Calculated affinity. Start to cluster."
         
         spectral = cluster.SpectralClustering(n_clusters=n_cluster,
