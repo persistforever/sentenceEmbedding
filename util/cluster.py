@@ -28,5 +28,5 @@ def kmeans(dataset, n_cluster = 625):
     feature_matrix = numpy.asarray(dataset)
     whitened = whiten(feature_matrix)
     cluster_num = 625
-    _, cluster_labels = kmeans2(whitened, cluster_num)
+    _, cluster_labels = kmeans2(whitened, cluster_num, iter = 100)
     return cluster_labels

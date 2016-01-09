@@ -7,6 +7,7 @@ if __name__ == '__main__':
     data_folder = "data/" + dataset
     text_file = data_folder + "/text"
     w2v_file = data_folder + "/w2vFlat"
+#     w2v_file = "data/xianliao/w2vFlat"
     stopwords_file = "data/punct"
     
     print "dataset: ", dataset
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     param_path = None
     model = None
     if len(sys.argv) < 2:
-        alg = "negativeSampling"
+        alg = "negativeSamplingHidden"
     else:
         alg = sys.argv[1]
     if(alg == "averageHidden"):
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):
-        chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, "spectral")
+        chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, "kmeans")
     else:
         mode = sys.argv[2]
         print "mode: ", mode

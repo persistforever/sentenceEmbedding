@@ -46,6 +46,10 @@ class CorpusReader:
         wordList = sentence[0]
         sentenceType = sentence[1]
         
+#         for word in wordList:
+#             if not word in self.w2vDict and not word in self.stopwords:
+#                 print word
+        
         sentenceMatrix = map(lambda word: self.w2vDict[word] if (word in self.w2vDict and word not in self.stopwords) else None, wordList)
         sentenceMatrix = filter(lambda item: not item is None, sentenceMatrix)
         

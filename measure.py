@@ -107,11 +107,10 @@ def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_fil
         count += step
 
         
-def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, method="kmeans", output_cluser_res = True):
+def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, method="kmeans", output_cluser_res=True):
     test_fun = model.getTestFunction(params)
     
     embeddingList = list()
-    sentence_label_list = list()
     sentence_list = list()
     
     print "Calculate embeddings."
@@ -119,15 +118,14 @@ def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_p
     with codecs.open("data/measure/base", "r", "utf-8", "ignore") as f:
         for line in f:
             sentence, sentence_label = line.split("\t")
-            sentence_list.append(sentence)
 #             print sentence
             info = cr.getSentenceMatrix(sentence, 0, 4)
             if info is None:
                 continue 
+            sentence_list.append((sentence, string.atoi(sentence_label)))
             matrix, snum, _, _ = info
             baseSentenceEmbedding, _, _ = test_fun(matrix, [0, 1], [0, snum])
             embeddingList.append(baseSentenceEmbedding[0])
-            sentence_label_list.append(string.atoi(sentence_label))
     
     print "Start to cluster."
     import util.cluster
@@ -138,21 +136,21 @@ def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_p
     t1 = time.time()
     
     if output_cluser_res:
-        with codecs.open(param_path+".measure", "w", "ignore") as  f:
+        with codecs.open(param_path + ".measure", "w", "utf-8", "ignore") as  f:
             sentence_dict = dict()
-            for sentence, cluster in zip(sentence_list, cluster_labels):
+            for sentence_and_label, cluster in zip(sentence_list, cluster_labels):
                 c = sentence_dict.get(cluster)
                 if c is None:
                     c = list()
                     sentence_dict[cluster] = c
-                c.append(sentence)
+                c.append(sentence_and_label)
             for c, sentence_cluster in sentence_dict.items():
-                f.write("Cluster: " + str(c)+" -------------------------------------------------\n")
-                for l in sentence_cluster:
-                    f.write(l)
-                    f.write("\n")
-    
-    e = relativeEntropy(sentence_label_list, cluster_labels) + relativeEntropy(cluster_labels, sentence_label_list)
+                f.write("Cluster: " + str(c) + " -------------------------------------------------\n")
+                for s, l in sentence_cluster:
+                    f.write("%d\t%s\n" % (l,s))
+    from sklearn import metrics
+    e = metrics.adjusted_mutual_info_score(zip(*sentence_list)[1], cluster_labels)  
+#     e = relativeEntropy(sentence_label_list, cluster_labels) + relativeEntropy(cluster_labels, sentence_label_list)
     print "method: ", method, "\tparam path: ", param_path, "\tchaos: ", e
     print "cost time: ", t1 - t0
     return e

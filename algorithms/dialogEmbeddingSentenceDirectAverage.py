@@ -47,7 +47,7 @@ class sentenceEmbeddingDirectAverage(algorithm):
         error = T.dot(iass, error)
         errorSum = T.sum(error)
         
-        learning_rate = 0.01
+        learning_rate = 0.001
         grads = T.grad(errorSum, self._params)
         updates = [
             (param_i, param_i - learning_rate * grad_i)
