@@ -18,7 +18,7 @@ if __name__ == '__main__':
     
     cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
     cr_scope = [0, 1000]
-    
+    batchSize = 5
     param_path = None
     model = None
     if len(sys.argv) < 2:
@@ -55,11 +55,12 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/hidden_negative_multiconv.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params)
+        batchSize = 100
     
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):
-        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize)
     else:
         mode = sys.argv[2]
         print "mode: ", mode
@@ -68,5 +69,5 @@ if __name__ == '__main__':
         elif(mode == "searchNeighbour"):
             searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
         elif(mode == "train"):
-            train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+            train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize)
     print "All finished!"
