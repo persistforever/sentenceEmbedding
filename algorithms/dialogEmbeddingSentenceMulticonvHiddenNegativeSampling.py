@@ -67,8 +67,12 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         print "Loading data."
         dialogMatrixes, docSentenceNums, sentenceWordNums, sl, _ = cr.getCorpus(cr_scope, 6, onlyFront=True)
         
+        cccount = 0
         for s in sl:
+            if(cccount % 2 ==0):
+                print "------------------"
             print string.join(s, "")
+            cccount += 1
         
         for i in xrange(1, len(docSentenceNums)):
             if docSentenceNums[i] - docSentenceNums[i - 1] != 2:
