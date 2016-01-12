@@ -41,7 +41,7 @@ class CorpusReader:
     def getDim(self):
         return self.__wordDim
     
-    def __sentence2Matrix(self, sentence, fillzeroWord=None):
+    def __sentence2Matrix(self, sentence, fillzeroWord=None, onlyFront=False):
         
         wordList = sentence[0]
         sentenceType = sentence[1]
@@ -58,14 +58,17 @@ class CorpusReader:
             return None
 
         if(fillzeroWord is not None):
-            sentenceMatrix = fillzeroWord + sentenceMatrix + fillzeroWord
+            if onlyFront:
+                sentenceMatrix = fillzeroWord + sentenceMatrix
+            else:
+                sentenceMatrix = fillzeroWord + sentenceMatrix + fillzeroWord
             
         sentenceWordNum = len(sentenceMatrix)
         
         return (sentenceMatrix, sentenceWordNum, wordList, sentenceType)
     
-    def __doc2Matrix(self, sentenceList, fillzeroWord=None):
-        m = map(lambda s:  self.__sentence2Matrix(s, fillzeroWord) , sentenceList)
+    def __doc2Matrix(self, sentenceList, fillzeroWord=None, onlyFront=False):
+        m = map(lambda s:  self.__sentence2Matrix(s, fillzeroWord, onlyFront) , sentenceList)
         m = filter(lambda item: not item is None, m)
         if(len(m) == 0):
             return None
@@ -87,12 +90,12 @@ class CorpusReader:
         
         return (dialogMatrix0, dialogSentenceNum, sentenceWordNum, sentenceTextList, sentenceTypes)
     
-    def __getDataMatrix(self, scope, fillzeroWord=None):
+    def __getDataMatrix(self, scope, fillzeroWord=None, onlyFront=False):
         scope[1] = np.min([scope[1], len(self.docs)])
         if(scope[0] < 0 or scope[0] >= scope[1]):
             return None
         batch = self.docs[scope[0]:scope[1]]
-        docInfo = self.pool.map(lambda b:self.__doc2Matrix(b, fillzeroWord), batch)
+        docInfo = self.pool.map(lambda b:self.__doc2Matrix(b, fillzeroWord, onlyFront), batch)
         print "Start to reduce data."
         if(len(docInfo) == 0):
             print "Lost doc: ", self.labels.items()[scope[0]:scope[1]]
@@ -142,18 +145,18 @@ class CorpusReader:
         maxSentenceWordNum = np.max(np.max(sentenceWordCount))
         return maxDocSentenceNum, maxSentenceWordNum
     
-    def getSentenceMatrix(self, sentenceStr, sentenceType, fillzeroWord=None):
+    def getSentenceMatrix(self, sentenceStr, sentenceType, fillzeroWord=None, onlyFront=False):
         if(fillzeroWord is not None):
             fillzeroWord = [ [0.0] * self.getDim()] * fillzeroWord 
 #             fillzeroWord = [np.zeros((self.getDim(),), dtype=theano.config.floatX)] * fillzeroWord 
         words = sentenceStr.split(" ")
-        return self.__sentence2Matrix((words, sentenceType), fillzeroWord)
+        return self.__sentence2Matrix((words, sentenceType, onlyFront), fillzeroWord)
     
     # Only positive scope numbers are legal.
-    def getCorpus(self, scope, fillzeroWord=None):
+    def getCorpus(self, scope, fillzeroWord=None, onlyFront=False):
         if(fillzeroWord is not None):
             fillzeroWord = [ [0.0] * self.getDim()] * fillzeroWord 
-        return self.__getDataMatrix(scope, fillzeroWord)
+        return self.__getDataMatrix(scope, fillzeroWord, onlyFront)
 
 def loadDocuments(filename, charset="utf-8"):
     f = open(filename, "r")
@@ -216,14 +219,14 @@ def loadDocuments(filename, charset="utf-8"):
         
         
         if(state == "1"):
-            if(lastState =="1" or lastState == "9"  or lastState == "2"):
+            if(lastState == "1" or lastState == "9"  or lastState == "2"):
                 sentenceBuffer = sentenceBuffer + sentence.split(" ")
             else:
                 sentenceList.append((sentenceBuffer, string.atoi(lastState)))
                 sentenceBuffer = sentence.split(" ")
                 good = True
         elif(state == "0"):
-            if( lastState == "0" or lastState == "9"  or lastState == "2"):
+            if(lastState == "0" or lastState == "9"  or lastState == "2"):
                 sentenceBuffer = sentenceBuffer + sentence.split(" ")
             else:
                 if good:

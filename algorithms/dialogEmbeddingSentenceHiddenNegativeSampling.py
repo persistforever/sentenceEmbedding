@@ -90,7 +90,7 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
 #         profmode = ProfileMode(optimizer='fast_run', linker=theano.gof.OpWiseCLinker())
         train_model = theano.function(
              [index],
-             [errorSum],
+             [e, errorSum, errorSumNegative, normalizationError],
              updates=updates,
              givens={
                             self._corpusWithEmbeddings: dialogMatrixes,

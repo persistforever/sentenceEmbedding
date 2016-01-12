@@ -17,12 +17,12 @@ if __name__ == '__main__':
     print "stopwords_file: ", stopwords_file
     
     cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
-    cr_scope = [1, 5000]
+    cr_scope = [0, 1000]
     
     param_path = None
     model = None
     if len(sys.argv) < 2:
-        alg = "negativeSamplingHidden"
+        alg = "negativeSamplingMulticonvWithHidden"
     else:
         alg = sys.argv[1]
     if(alg == "averageHidden"):
@@ -50,11 +50,16 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/hidden_negative.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingHiddenNegativeSampling(params)
+    elif(alg == "negativeSamplingMulticonvWithHidden"):
+        from algorithms.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
+        param_path = data_folder + "/model/hidden_negative_multiconv.model"
+        params = loadParamsVal(param_path)
+        model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params)
     
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):
-        chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, "kmeans")
+        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
     else:
         mode = sys.argv[2]
         print "mode: ", mode

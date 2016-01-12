@@ -14,11 +14,11 @@ import time
 from util.entropy import relativeEntropy
 
 def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
-    train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=5)
+    train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=100)
     
     print "Start to train."
     epoch = 0
-    n_epochs = 2000
+    n_epochs = 1000
     ite = 0
     
     while (epoch < n_epochs):
@@ -27,15 +27,15 @@ def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_fil
         for i in range(n_batches):
             errorNum = train_model(i)
             ite = ite + 1
-            if(ite % 10 == 0):
+            if(ite % 100 == 0):
                 print
                 print "@iter: ", ite
-                print "Error " , param_path , ": ", errorNum
+                print "Error " , param_path , ": ", str(errorNum)
                 # Save train_model
                 print "Saving parameters."
                 saveParamsVal(param_path, model.getParameters())
                 print "Saved."
-                
+#             exit()
                 
 def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
     class sentenceScorePair(object):
