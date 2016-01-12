@@ -56,33 +56,36 @@ class SentenceEmbeddingMultiNN:
                 
 #         p = printing.Print("corpus")
 #         corpus = p(corpus)
-
+        self.params = self.sentenceW + self.sentenceB
         self.__poolingSize.append((self.__MAXDIM, 1))
         sentenceResults, _ = theano.scan(fn=self.__dealWithSentence,
-                    non_sequences=[corpus],
-                     sequences=[dict(input=oneDocSentenceWordCount, taps=[-1, -0])])
+                    non_sequences=[corpus] + self.params,
+                     sequences=[dict(input=oneDocSentenceWordCount, taps=[-1, -0])],
+                     strict=True)
         
         self.output = sentenceResults
-        self.params = self.sentenceW + self.sentenceB
+        
         self.outputDimension = self.__wordEmbeddingDim
         
 #         for i in xrange(len(sentenceLayerNodesSize)):
 #             self.outputDimension = (self.outputDimension - sentenceLayerNodesSize[i][1] + 1) / self.__poolingSize[i][1] + 1
         
         for nodesSize, pSize in zip(sentenceLayerNodesSize, self.__poolingSize):
-            self.outputDimension = (self.outputDimension - nodesSize[1] + 1 -1) / pSize[1] + 1
+            self.outputDimension = (self.outputDimension - nodesSize[1] + 1 - 1) / pSize[1] + 1
             
         self.outputDimension *= sentenceLayerNodesNum[-1]
     
-    def __dealWithSentence(self, sentenceWordCount0, sentenceWordCount1, docs):
+    def __dealWithSentence(self, sentenceWordCount0, sentenceWordCount1, docs, *karg):
         
 #         p = printing.Print("sentenceWordCount0")
 #         sentenceWordCount0 = p(sentenceWordCount0)  
 #         p = printing.Print("sentenceWordCount1")
 #         sentenceWordCount1 = p(sentenceWordCount1)  
 #         t = T.and_((shareRandge < sentenceWordCount1),  (shareRandge >= sentenceWordCount0)).nonzero()
-        sentenceW = self.sentenceW
-        sentenceB = self.sentenceB
+#         sentenceW = self.sentenceW
+#         sentenceB = self.sentenceB
+        sentenceW = karg[:len(karg) / 2]
+        sentenceB = karg[len(karg) / 2:]
         poolingSize = self.__poolingSize
         sentence = docs[sentenceWordCount0:sentenceWordCount1]
         
