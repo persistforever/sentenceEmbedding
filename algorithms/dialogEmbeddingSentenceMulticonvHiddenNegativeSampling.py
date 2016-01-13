@@ -35,6 +35,9 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         self._nextSentence = layer1.output
         self._params = layer1.params + layer0.params
         self._setParameters(input_params)
+        
+#         for p in layer1.params:
+#             print p.get_value()
     
     def getTrainFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE"):
         normalizationError = 0
@@ -61,6 +64,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         
         grads = T.grad(e, self._params)
         updates = [
+#             (param_i, param_i - learning_rate * grad_i / batchSize)
             (param_i, param_i - learning_rate * grad_i)
             for param_i, grad_i in zip(self._params, grads)
         ]
@@ -69,7 +73,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         
         cccount = 0
         for s in sl:
-            if(cccount % 2 ==0):
+            if(cccount % 2 == 0):
                 print "------------------"
             print string.join(s, "")
             cccount += 1
