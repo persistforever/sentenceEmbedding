@@ -23,7 +23,7 @@ class SentenceEmbeddingMultiNN:
         self.__sentenceLayerNodesNum = sentenceLayerNodesNum
         self.__sentenceLayerNodesSize = sentenceLayerNodesSize
         self.__poolingSize = list(poolingSize)
-        self.__WBound = 0.2
+        self.__WBound = 0.02
         self.__MAXDIM = 10000
         self.__datatype = datatype
         
@@ -39,8 +39,10 @@ class SentenceEmbeddingMultiNN:
         lastNodesNum = 1
         for nodesNum, nodesSize in zip(sentenceLayerNodesNum, sentenceLayerNodesSize):
             self.sentenceW.append(theano.shared(
-                numpy.asarray(
-                    rng.uniform(low=-self.__WBound, high=self.__WBound, size=(nodesNum, lastNodesNum, nodesSize[0], nodesSize[1])),
+                numpy.asarray(                   
+                    rng.uniform(low=-self.__WBound / numpy.sqrt(lastNodesNum * 1), \
+                                            high=self.__WBound / numpy.sqrt(lastNodesNum * 1), \
+                                            size=(nodesNum, lastNodesNum, nodesSize[0], nodesSize[1])),
                     dtype=datatype
                 ),
                 borrow=True
@@ -99,7 +101,7 @@ class SentenceEmbeddingMultiNN:
             sentence_out = conv.conv2d(input=lastOutput, filters=w)
             
             count += 1
-#             p = printing.Print("sentence_out"+str(count))
+#             p = printing.Print("sentence_out" + str(count))
 #             sentence_out = p(sentence_out)  
             
             sentence_pool = downsample.max_pool_2d(sentence_out, poolsize, mode=self.mode, ignore_border=False)
@@ -107,13 +109,17 @@ class SentenceEmbeddingMultiNN:
 #             p = printing.Print("sentence_pool"+str(count))
 #             sentence_pool = p(sentence_pool)  
             
-            bd = b.dimshuffle(['x', 0, 'x', 'x'])
+            bd = b.dimshuffle(['x', 0, 'x', 'x']) + sentence_pool
             
-#             p = printing.Print("bd"+str(count))
-#             bd= p(bd)  
+#             p = printing.Print("bd" + str(count))
+#             bd = p(bd)  
             
-            sentence_output = T.tanh(sentence_pool + bd)
+            sentence_output = T.tanh(bd)
             lastOutput = sentence_output
+            
+#             p = printing.Print("lastOutput" + str(count))
+#             lastOutput = p(lastOutput)  
+            
         
         sentence_embedding = lastOutput.flatten(1)
     
