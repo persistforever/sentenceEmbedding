@@ -1,20 +1,25 @@
 from sklearn import cluster
 import numpy
-def spectral(dataset, n_cluster = 625):
-    import util.affinity_matrix
+# import util.affinity_matrix
+def spectral(dataset, n_cluster, matrix_type = "data"):
+    """
+    matrix_type has two value: data or affinity
+    
+    """
     feature_matrix = numpy.asarray(dataset)
-#     mode = "GPUAffinity"
-    mode = "CPU"
-    if mode == "GPUAffinity":
+#     matrix_type = "affinity"
+#     matrix_type = "data"
+    if matrix_type == "affinity":
         print "Calculate affinity."
-        affinty_matrix = util.affinity_matrix.compute_affinity_matrix(feature_matrix)[0]
+#         affinty_matrix = util.affinity_matrix.compute_affinity_matrix(feature_matrix)[0]
+        affinty_matrix = feature_matrix
         print "Calculated affinity. Start to cluster."
         
         spectral = cluster.SpectralClustering(n_clusters=n_cluster,
                                           eigen_solver='arpack',
                                           affinity="precomputed")
         spectral.fit(affinty_matrix)
-    else:
+    elif matrix_type == "data":
         spectral = cluster.SpectralClustering(n_clusters=n_cluster,
                                           eigen_solver='arpack',
                                           affinity="nearest_neighbors")

@@ -1,6 +1,5 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from scipy.cluster.vq import kmeans2, whiten
 import os
 import string
 import numpy
@@ -9,12 +8,10 @@ import heapq
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 import cPickle
 from loadDialog import CorpusReader
-
+from sklearn import metrics
 import time
-from util.entropy import relativeEntropy
-
-def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model,  batchSize=5):
-    train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=5)
+def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=5):
+    train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
     
     print "Start to train."
     epoch = 0
@@ -147,8 +144,8 @@ def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_p
             for c, sentence_cluster in sentence_dict.items():
                 f.write("Cluster: " + str(c) + " -------------------------------------------------\n")
                 for s, l in sentence_cluster:
-                    f.write("%d\t%s\n" % (l,s))
-    from sklearn import metrics
+                    f.write("%d\t%s\n" % (l, s))
+
     e = metrics.adjusted_mutual_info_score(zip(*sentence_list)[1], cluster_labels)  
 #     e = relativeEntropy(sentence_label_list, cluster_labels) + relativeEntropy(cluster_labels, sentence_label_list)
     print "method: ", method, "\tparam path: ", param_path, "\tchaos: ", e
