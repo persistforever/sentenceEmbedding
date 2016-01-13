@@ -10,7 +10,9 @@ import cPickle
 from loadDialog import CorpusReader
 from sklearn import metrics
 import time
-def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=5):
+def train(cr, cr_scope, dataset, data_folder, \
+          text_file, w2v_file, stopwords_file, \
+          param_path, params, model, batchSize=5, save_freq = 10):
     train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
     
     print "Start to train."
@@ -24,7 +26,7 @@ def train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_fil
         for i in range(n_batches):
             errorNum = train_model(i)
             ite = ite + 1
-            if(ite % 100 == 0):
+            if(ite % save_freq == 0):
                 print
                 print "@iter: ", ite
                 print "Error " , param_path , ": ", str(errorNum)
