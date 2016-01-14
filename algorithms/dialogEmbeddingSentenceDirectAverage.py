@@ -9,6 +9,7 @@ from layers.sentenceEmbeddingAverage import sentenceEmbeddingAverage
 
 from algorithms.algorithm import algorithm
 import util
+import config
 
 class sentenceEmbeddingDirectAverage(algorithm):
     def __init__(self, input_params=None):
@@ -28,7 +29,7 @@ class sentenceEmbeddingDirectAverage(algorithm):
         semanicTransformW = theano.shared(
             numpy.asarray(
                 rng.uniform(low=-0.2, high=0.2, size=(self._layer0.outputDimension, 200)),
-                dtype=theano.config.floatX
+                dtype=config.globalFloatType()
             ),
             borrow=True
         )
@@ -55,7 +56,7 @@ class sentenceEmbeddingDirectAverage(algorithm):
         ]
         print "Loading data."
         dialogMatrixes, docSentenceNums, sentenceWordNums, _, _ = cr.getCorpus(cr_scope, 4)
-        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, theano.config.floatX)
+        dialogMatrixes = algorithm.transToTensor(dialogMatrixes, config.globalFloatType())
         docSentenceNums = algorithm.transToTensor(docSentenceNums, numpy.int32)
         sentenceWordNums = algorithm.transToTensor(sentenceWordNums, numpy.int32)
         
