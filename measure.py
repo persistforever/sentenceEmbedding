@@ -12,11 +12,11 @@ from sklearn import metrics
 import time
 def train(cr, cr_scope, dataset, data_folder, \
           text_file, w2v_file, stopwords_file, \
-          param_path, params, model, batchSize=5, save_freq = 10, \
+          param_path, params, model, batchSize=5, save_freq=10, \
           shuffle=False):
     if shuffle:
         cr.shuffle()
-    train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
+    train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
     
     print "Start to train."
     epoch = 0
@@ -39,7 +39,8 @@ def train(cr, cr_scope, dataset, data_folder, \
                 print "Saved."
         if shuffle and epoch < n_epochs:
             cr.shuffle()
-            train_model, n_batches = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
+            clear_func()
+            train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
 #             exit()
                 
 def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):

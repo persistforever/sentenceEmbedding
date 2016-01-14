@@ -82,8 +82,15 @@ class sentenceEmbeddingHiddenAverage(algorithm):
                         },
             allow_input_downcast=True
          )
+        
+        def clear_memory():
+            train_model.free()
+            dialogMatrixes.set_value([[]])
+            docSentenceNums.set_value([])
+            sentenceWordNums.set_value([])
+            
         print "Compiled."
-        return train_model, n_batches
+        return train_model, n_batches, clear_memory
     
     def getTestFunction(self, param):
         print "Compiling computing graph."

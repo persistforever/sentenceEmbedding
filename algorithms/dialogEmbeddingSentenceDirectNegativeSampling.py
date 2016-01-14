@@ -109,7 +109,12 @@ class sentenceEmbeddingDirectNegativeSampling(algorithm):
 		    allow_input_downcast=True
 		 )
 		print "Compiled."
-		return train_model, n_batches
+		def clear_memory():
+			train_model.free()
+			dialogMatrixes.set_value([[]])
+			docSentenceNums.set_value([])
+			sentenceWordNums.set_value([])
+		return train_model, n_batches, clear_memory
 	
 	def getTestFunction(self, param):
 		print "Compiling computing graph."
