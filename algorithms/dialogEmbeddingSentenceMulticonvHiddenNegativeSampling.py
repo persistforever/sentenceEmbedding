@@ -12,7 +12,7 @@ import string
 
 class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
     
-    def __init__(self, input_params=None):
+    def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1):
         rng = numpy.random.RandomState(23455)
         self._corpusWithEmbeddings = T.matrix("wordIndeices")
         self._dialogSentenceCount = T.ivector("dialogSentenceCount")
@@ -20,8 +20,8 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         
         # for list-type data
         self._layer0 = layer0 = SentenceEmbeddingMultiNN(self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount, rng, wordEmbeddingDim=200, \
-                                                         sentenceLayerNodesNum=[150, 120], \
-                                                         sentenceLayerNodesSize=[(2, 200), (3, 1)],
+                                                         sentenceLayerNodesNum=sentenceLayerNodesNum, \
+                                                         sentenceLayerNodesSize=sentenceLayerNodesSize,
                                                          poolingSize=[(2, 1)],
                                                          mode="max")
         
@@ -35,7 +35,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         self._nextSentence = layer1.output
         self._params = layer1.params + layer0.params
         self._setParameters(input_params)
-        
+        self.negativeLambda=negativeLambda
 #         for p in layer1.params:
 #             print p.get_value()
     
@@ -58,7 +58,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         learning_rate = 0.01
         
         normalizationLambda = 0.0
-        negativeLambda = 1
+        negativeLambda = self.negativeLambda
 #         e = errorSum - negativeLambda * errorSumNegative + normalizationLambda * normalizationError
         e = negativeLambda * errorSum / errorSumNegative + normalizationLambda * normalizationError
         
@@ -71,12 +71,12 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         print "Loading data."
         dialogMatrixes, docSentenceNums, sentenceWordNums, sl, _ = cr.getCorpus(cr_scope, 6, onlyFront=True)
         
-        cccount = 0
-        for s in sl:
-            if(cccount % 2 == 0):
-                print "------------------"
-            print string.join(s, "")
-            cccount += 1
+#         cccount = 0
+#         for s in sl:
+#             if(cccount % 2 == 0):
+#                 print "------------------"
+#             print string.join(s, "")
+#             cccount += 1
         
         for i in xrange(1, len(docSentenceNums)):
             if docSentenceNums[i] - docSentenceNums[i - 1] != 2:

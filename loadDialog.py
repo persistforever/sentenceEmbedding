@@ -7,6 +7,8 @@ import numpy as np
 from codecs import decode
 import string
 from util.rubbish import isRubbishSentence
+import random
+
 
 class CorpusReader:
     pool = ThreadPool(12)
@@ -40,6 +42,15 @@ class CorpusReader:
     
     def getDim(self):
         return self.__wordDim
+    
+    def shuffle(self):
+        part0 = self.docs[0::2]
+        part1 = self.docs[1::2]
+        pairs = zip(part0, part1)
+        random.shuffle(pairs)
+        self.docs = list()
+        for d in pairs:
+            self.docs.extend(d)
     
     def __sentence2Matrix(self, sentence, fillzeroWord=None, onlyFront=False):
         
