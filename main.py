@@ -24,7 +24,7 @@ if __name__ == '__main__':
     model = None
     shuffle = False
     if len(sys.argv) < 2:
-        alg = "negativeSamplingShuffleMulticonvWithHidden"
+        alg = "negativeSamplingShuffleMulticonvWithHiddenAverageMode"
     else:
         alg = sys.argv[1]
     if(alg == "averageHidden"):
@@ -67,12 +67,25 @@ if __name__ == '__main__':
         batchSize = 200
         save_freq = 10
         shuffle = True
+    elif(alg == "negativeSamplingShuffleMulticonvWithHiddenAverageMode"):
+        from algorithms.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
+        param_path = data_folder + "/model/hidden_negative_shuffle_multiconv_average_mode.model"
+        params = loadParamsVal(param_path)
+        model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, sentenceLayerNodesNum=[1000, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], mode="average")
+        batchSize = 200
+        save_freq = 10
+        shuffle = True
+    elif(alg == "justAverage"):
+        from algorithms.dialogEmbeddingSentenceJustAverage import sentenceEmbeddingJustAverage
+        param_path = data_folder + "/model/just_average.model"
+        params = None
+        model = sentenceEmbeddingJustAverage(params)
     
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):
-#         chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
+        chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+#         train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
     else:
         mode = sys.argv[2]
         print "mode: ", mode

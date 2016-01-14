@@ -12,7 +12,7 @@ import string
 
 class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
     
-    def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1):
+    def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1, mode="max"):
         rng = numpy.random.RandomState(23455)
         self._corpusWithEmbeddings = T.matrix("wordIndeices")
         self._dialogSentenceCount = T.ivector("dialogSentenceCount")
@@ -23,7 +23,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
                                                          sentenceLayerNodesNum=sentenceLayerNodesNum, \
                                                          sentenceLayerNodesSize=sentenceLayerNodesSize,
                                                          poolingSize=[(2, 1)],
-                                                         mode="max")
+                                                         mode=mode)
         
         layer1 = HiddenLayer(
             rng,
@@ -35,7 +35,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         self._nextSentence = layer1.output
         self._params = layer1.params + layer0.params
         self._setParameters(input_params)
-        self.negativeLambda=negativeLambda
+        self.negativeLambda = negativeLambda
 #         for p in layer1.params:
 #             print p.get_value()
     
