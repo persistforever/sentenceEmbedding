@@ -13,6 +13,9 @@ import string
 class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
     
     def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1, mode="max"):
+        """
+        mode is in {'max', 'average_inc_pad', 'average_exc_pad', 'sum'}
+        """
         rng = numpy.random.RandomState(23455)
         self._corpusWithEmbeddings = T.matrix("wordIndeices")
         self._dialogSentenceCount = T.ivector("dialogSentenceCount")
