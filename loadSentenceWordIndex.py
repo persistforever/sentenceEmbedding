@@ -40,7 +40,7 @@ class CorpusReader:
         
         # Load w2v model data from file
         self.dictionary = loadDictionary(dict_file)
-        self.dictionary["<STA>"] = self.sentenceStartFlagIndex = len(self.dictionary)
+        self.dictionary["<BEG>"] = self.sentenceStartFlagIndex = len(self.dictionary)
         self.dictionary["<END>"] = self.sentenceEndFlagIndex = len(self.dictionary) 
         self.dictionary["<UNK>"] = self.sentenceUnkFlagIndex = len(self.dictionary)
         print "dictionary size: ", len(self.dictionary)
@@ -109,7 +109,7 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
     docList = list()
     for line0 in f:
         try:
-            line = decode(line0, charset, 'ignore')
+            line = decode(line0, charset)
         except:
             continue
         
@@ -124,7 +124,7 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
             continue
         
         sentence = map(lambda word: dictionary[word] if (word in dictionary and word not in stopwords) else dictionary["<UNK>"], sentence)
-        
+        sentence = [dictionary["<STA>"]] + sentence + [dictionary["<END>"]]
         sentenceEmbedding = tokens[1].strip()
         sentenceEmbedding = map(lambda x: string.atof(x), sentenceEmbedding.split(" "))
          
@@ -159,7 +159,7 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
 
 
 def loadStopwords(filename, charset="utf-8"):
-    f = codecs.open(filename, "r", charset, "ignore")
+    f = codecs.open(filename, "r", charset)
     d = set()
     for line in f :
         d.add(line.strip("\r\n"))
