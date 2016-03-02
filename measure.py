@@ -7,17 +7,15 @@ import codecs
 import heapq
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 import cPickle
-from loadDialog import CorpusReader
 from sklearn import metrics
 import time
-def train(cr, cr_scope, dataset, data_folder, \
-          text_file, w2v_file, stopwords_file, \
-          param_path, params, model, batchSize=5, save_freq=10, \
+def train(cr, cr_scope, param_path, params, model, batchSize=5, save_freq=10, \
           shuffle=False):
     if shuffle:
         cr.shuffle()
     train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
-    
+    valid_model = model.getValidingFunction(cr)
+    test_model = model.getTestingFunction(cr)
     print "Start to train."
     epoch = 0
     n_epochs = 1000
@@ -32,11 +30,16 @@ def train(cr, cr_scope, dataset, data_folder, \
             if(ite % save_freq == 0):
                 print
                 print "@iter: ", ite
-                print "Error " , param_path , ": ", str(errorNum)
+                print "Training Error : " , param_path , " -> ", str(errorNum)
+                print "Valid Error: ", param_path, " -> ", str(valid_model())
                 # Save train_model
                 print "Saving parameters."
                 saveParamsVal(param_path, model.getParameters())
                 print "Saved."
+        
+        print "Now testing model."
+        print "Test Error: ", param_path, " -> ", str(test_model())
+        
         if shuffle and epoch < n_epochs:
             cr.shuffle()
             clear_func()
@@ -113,7 +116,7 @@ def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_fil
         count += step
 
         
-def chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, method="kmeans", output_cluser_res=True):
+def chaos(cr, param_path, params, model, method="kmeans", output_cluser_res=True):
     test_fun = model.getTestFunction(params)
     
     embeddingList = list()
@@ -178,23 +181,23 @@ def loadParamsVal(path):
             except:
                 break
     return toReturn
-
-if __name__ == '__main__':
-    dataset = "kefu"
-    data_folder = "data/" + dataset
-    text_file = data_folder + "/text"
-    w2v_file = data_folder + "/w2vFlat"
-    stopwords_file = "data/punct"
-    
-    cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
-    cr_scope = [0, 5000]
-    
-    param_path = None
-    model = None
-    
-    from algorithms.dialogEmbeddingSentenceHiddenNegativeSampling import sentenceEmbeddingHiddenNegativeSampling
-    param_path = data_folder + "/model/hidden_negative.model"
-    params = loadParamsVal(param_path)
-    model = sentenceEmbeddingHiddenNegativeSampling(params)
-#     train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-    chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+# 
+# if __name__ == '__main__':
+#     dataset = "kefu"
+#     data_folder = "data/" + dataset
+#     text_file = data_folder + "/text"
+#     w2v_file = data_folder + "/w2vFlat"
+#     stopwords_file = "data/punct"
+#     
+#     cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
+#     cr_scope = [0, 5000]
+#     
+#     param_path = None
+#     model = None
+#     
+#     from algorithms.dialogEmbeddingSentenceHiddenNegativeSampling import sentenceEmbeddingHiddenNegativeSampling
+#     param_path = data_folder + "/model/hidden_negative.model"
+#     params = loadParamsVal(param_path)
+#     model = sentenceEmbeddingHiddenNegativeSampling(params)
+# #     train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+#     chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)

@@ -8,11 +8,30 @@ class algorithm:
     
     @abstractmethod
     def getTrainFunction(self):
+        """
+            :Return a theano function, which is a training fucntion whose
+            input value is a index indicates the serial number of input mini-batch.
+        """
         pass
     
     @abstractmethod
-    def getTestFunction(self, param):
-        """@Return a theano function, which is a testing function. Its 
+    def getValidingFunction(self):
+        """
+            :Return a theano function which works on the valid data. The output of this fuction is similar 
+            with @getTrainFunction, but without updating operation."""
+        pass
+    
+        @abstractmethod
+        def getTestingFunction(self):
+            """
+                :Return a theano function which works on the test data. The output of this fuction is similar 
+                with @getTrainFunction, but without updating operation."""
+            pass
+
+    @abstractmethod
+    def getDeployFunction(self, param):
+        """
+            :Return a theano function, which is a testing function. Its 
             return value is (sentence embedding, predicting next sentence embedding, reference sentence embedding).
             In general, if the predicting next  embedding of sentence A is similar to the reference sentence 
             embedding of sentence B, we say that B is approximately next to A. """

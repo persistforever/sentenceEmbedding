@@ -12,7 +12,7 @@ import string
 
 class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
     
-    def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1, mode="max"):
+    def __init__(self, input_params=None, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], negativeLambda=1, poolingSize=[(2, 1)], mode="max"):
         """
         mode is in {'max', 'average_inc_pad', 'average_exc_pad', 'sum'}
         """
@@ -25,7 +25,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         self._layer0 = layer0 = SentenceEmbeddingMultiNN(self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount, rng, wordEmbeddingDim=200, \
                                                          sentenceLayerNodesNum=sentenceLayerNodesNum, \
                                                          sentenceLayerNodesSize=sentenceLayerNodesSize,
-                                                         poolingSize=[(2, 1)],
+                                                         poolingSize=poolingSize,
                                                          mode=mode)
         
         layer1 = HiddenLayer(
@@ -39,6 +39,12 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
         self._params = layer1.params + layer0.params
         self._setParameters(input_params)
         self.negativeLambda = negativeLambda
+        
+        zero_count = 1
+        for sentence, pooling in zip(sentenceLayerNodesSize[-1::-1], [(1, 1)] + poolingSize[-1::-1]): 
+            zero_count *= pooling[0]
+            zero_count += sentence[0] - 1 
+        self.zero_count = zero_count - 1
 #         for p in layer1.params:
 #             print p.get_value()
     
@@ -72,7 +78,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
             for param_i, grad_i in zip(self._params, grads)
         ]
         print "Loading data."
-        dialogMatrixes, docSentenceNums, sentenceWordNums, sl, _ = cr.getCorpus(cr_scope, 6, onlyFront=True)
+        dialogMatrixes, docSentenceNums, sentenceWordNums, sl, _ = cr.getCorpus(cr_scope, self.zero_count, onlyFront=True)
         
 #         cccount = 0
 #         for s in sl:

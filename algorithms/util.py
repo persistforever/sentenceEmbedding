@@ -1,6 +1,9 @@
 import theano
 from theano import tensor as T
-def getError(m1, m2, errorType = "RMSE"):
+import numpy
+from theano import config
+
+def getError(m1, m2, errorType="RMSE"):
     error = None
     if(errorType == "RMSE"):
         errorVector = m1 - m2
@@ -14,3 +17,12 @@ def getError(m1, m2, errorType = "RMSE"):
         error, _ = theano.scan(fn=coserror, sequences=[m1, m2])
         error = -error
     return error
+
+def numpy_floatX(data):
+    return numpy.asarray(data, dtype=config.floatX)
+
+def ortho_weight(ndim):
+    W = numpy.random.randn(ndim, ndim)
+    u, s, v = numpy.linalg.svd(W)
+    return u.astype(config.floatX)
+

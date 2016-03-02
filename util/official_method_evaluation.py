@@ -41,7 +41,6 @@ if __name__ == '__main__':
             base_labels.append(string.atoi(tokens[1]))
     print "Total  base data amount: %d" % len(base_labels)
     
-    
     e = metrics.adjusted_mutual_info_score( [base_labels[i] for i in ids], cluster_ids)
     print e
     print "All finished!"
