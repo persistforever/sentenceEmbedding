@@ -39,7 +39,7 @@ class CorpusReader:
         print "stop words: ", len(self.stopwords)
         
         # Load w2v model data from file
-        self.dictionary = loadDictionary(dict_file)
+        self.dictionary = loadDictionary(dict_file, "gbk")
         self.dictionary["<BEG>"] = self.sentenceStartFlagIndex = len(self.dictionary)
         self.dictionary["<END>"] = self.sentenceEndFlagIndex = len(self.dictionary) 
         self.dictionary["<UNK>"] = self.sentenceUnkFlagIndex = len(self.dictionary)
@@ -53,7 +53,7 @@ class CorpusReader:
                                   self.stopwords ,
                                     maxSentenceWordNum=maxSentenceWordNum,
                                     minSentenceWordNum=minSentenceWordNum,
-                                    charset="utf-8")
+                                    charset="gbk")
         
         print "train_set size: ", len(self.train_set[0])
         print "valid_set size: ", len(self.valid_set[0])
@@ -78,7 +78,7 @@ class CorpusReader:
             if(scope[0] < 0 or scope[0] >= scope[1]):
                 return None
         else:
-            scope=[0, len(x)]
+            scope = [0, len(x)]
         
         batch_x = x[scope[0]:scope[1]]
         batch_y = numpy.matrix(y[scope[0]:scope[1]]).astype(theano.config.floatX)
@@ -95,13 +95,13 @@ class CorpusReader:
             
         return x_data, x_mask, batch_y
         
-    def getTrainSet(self, scope = None):
+    def getTrainSet(self, scope=None):
         return self.__getSet(scope, self.train_set[0], self.train_set[1])
         
-    def getValidSet(self, scope = None):
+    def getValidSet(self, scope=None):
         return self.__getSet(scope, self.valid_set[0], self.valid_set[1])
         
-    def getTestSet(self, scope = None):
+    def getTestSet(self, scope=None):
         return self.__getSet(scope, self.test_set[0], self.test_set[1])
         
 def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, minSentenceWordNum=1, charset="utf-8"):
@@ -124,7 +124,7 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
             continue
         
         sentence = map(lambda word: dictionary[word] if (word in dictionary and word not in stopwords) else dictionary["<UNK>"], sentence)
-        sentence = [dictionary["<STA>"]] + sentence + [dictionary["<END>"]]
+        sentence = [dictionary["<BEG>"]] + sentence + [dictionary["<END>"]]
         sentenceEmbedding = tokens[1].strip()
         sentenceEmbedding = map(lambda x: string.atof(x), sentenceEmbedding.split(" "))
          
@@ -132,8 +132,8 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
         
     f.close()
     
-    train_rate = int(math.floor(0.7 * len(docList)))
-    valid_rate = int(math.floor(0.9 * len(docList)))
+    train_rate = int(math.floor(0.999 * len(docList)))
+    valid_rate = int(math.floor(0.9993 * len(docList)))
     test_rate = int(math.floor(1.0 * len(docList)))
     
     train_set = docList[0:train_rate]
@@ -173,6 +173,9 @@ def loadDictionary(filename, charset="utf-8"):
         data = line.strip("\r\n").split("\t")
         word = data[0]
         index = string.atoi(data[1])
+        if word in d.keys():
+            print "Word '%s' appears more than once in dict." % word
+            assert False
 #         d[word] = np.array(vec, dtype=theano.config.floatX)
         d[word] = index
     f.close()

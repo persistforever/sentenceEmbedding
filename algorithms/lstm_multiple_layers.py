@@ -16,10 +16,10 @@ from algorithms.layers.dropout_layer import dropout_layer
 from algorithms.util import getError
 
 
-class lstm(algorithm):
+class lstm_multiple_layers(algorithm):
     def __init__(self, n_words, ydim, input_params=None):
         self.options = options = {
-           "dim_proj": 2048,  # word embeding dimension and LSTM number of hidden units.
+           "dim_proj": 1024,  # word embeding dimension and LSTM number of hidden units.
             "patience": 10,  # Number of epoch to wait before early stop if no progress
             "decay_c": 0.,  # Weight decay for the classifier applied to the U weights.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
@@ -54,14 +54,36 @@ class lstm(algorithm):
                                                     options['dim_proj']])
         
         
-        lstm_encoder = lstm_layer(emb, mask=self.mask, \
+        lstm_encoder1 = lstm_layer(emb, mask=self.mask, \
                                    dim_proj=options['dim_proj'], \
                                    params=tparams, \
-                                   prefix="lstm")
+                                   prefix="lstm1")
         
-        proj = lstm_encoder.output
+        proj1 = lstm_encoder1.output
+        
+        lstm_encoder2 = lstm_layer(proj1, mask=self.mask, \
+                                   dim_proj=options['dim_proj'], \
+                                   params=tparams, \
+                                   prefix="lstm2")
+        
+        proj2 = lstm_encoder2.output
+        
+        lstm_encoder3 = lstm_layer(proj2, mask=self.mask, \
+                                   dim_proj=options['dim_proj'], \
+                                   params=tparams, \
+                                   prefix="lstm3")
+        
+        proj3 = lstm_encoder3.output
+        
+        lstm_encoder4 = lstm_layer(proj3, mask=self.mask, \
+                                   dim_proj=options['dim_proj'], \
+                                   params=tparams, \
+                                   prefix="lstm4")
+        
+        proj4 = lstm_encoder4.output
+        
         # The average of outputs of cells is the final output of the lstm network.
-        proj = (proj * self.mask[:, :, None]).sum(axis=0)
+        proj = (proj4 * self.mask[:, :, None]).sum(axis=0)
         proj = proj / self.mask.sum(axis=0)[:, None]
             
         

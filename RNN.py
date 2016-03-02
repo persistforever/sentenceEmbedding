@@ -1,6 +1,6 @@
 from loadSentenceWordIndex import CorpusReader
 from measure import searchNeighbour, train, chaos, loadParamsVal
-from algorithms.lstm import lstm 
+
 import sys
 if __name__ == '__main__':
     dataset = "plp"
@@ -35,8 +35,19 @@ if __name__ == '__main__':
     if(alg == "lstm"):
         param_path = data_folder + "/model/lstm.model"
         params = loadParamsVal(param_path)
+        from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, cr.getYDimension(), params)
-    
+    elif(alg == "lstm_small"):
+        param_path = data_folder + "/model/lstm_small.model"
+        params = loadParamsVal(param_path)
+        from algorithms.lstm_small import lstm_small 
+        model = lstm_small(len(cr.dictionary) + 1, cr.getYDimension(), params)
+    elif alg == "lstm_multi":
+        param_path = data_folder + "/model/lstm_multi.model"
+        params = loadParamsVal(param_path)
+        from algorithms.lstm_multiple_layers import lstm_multiple_layers 
+        model = lstm_multiple_layers(len(cr.dictionary) + 1, cr.getYDimension(), params)
+        
     print "param_path: ", param_path
     
     if(len(sys.argv) < 3):

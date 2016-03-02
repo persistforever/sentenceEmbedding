@@ -16,10 +16,10 @@ from algorithms.layers.dropout_layer import dropout_layer
 from algorithms.util import getError
 
 
-class lstm(algorithm):
+class lstm_small(algorithm):
     def __init__(self, n_words, ydim, input_params=None):
         self.options = options = {
-           "dim_proj": 2048,  # word embeding dimension and LSTM number of hidden units.
+           "dim_proj": 128,  # word embeding dimension and LSTM number of hidden units.
             "patience": 10,  # Number of epoch to wait before early stop if no progress
             "decay_c": 0.,  # Weight decay for the classifier applied to the U weights.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
