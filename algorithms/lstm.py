@@ -17,9 +17,9 @@ from algorithms.util import getError
 
 
 class lstm(algorithm):
-    def __init__(self, n_words, ydim, input_params=None):
+    def __init__(self, n_words, hidden_dim, ydim, input_params=None):
         self.options = options = {
-           "dim_proj": 2048,  # word embeding dimension and LSTM number of hidden units.
+           "dim_proj": hidden_dim,  # word embeding dimension and LSTM number of hidden units.
             "patience": 10,  # Number of epoch to wait before early stop if no progress
             "decay_c": 0.,  # Weight decay for the classifier applied to the U weights.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
@@ -53,13 +53,8 @@ class lstm(algorithm):
                                                     n_samples,
                                                     options['dim_proj']])
         
+        proj = self.connect_layers(emb, mask=self.mask, dim_proj=options['dim_proj'], tparams=tparams)
         
-        lstm_encoder = lstm_layer(emb, mask=self.mask, \
-                                   dim_proj=options['dim_proj'], \
-                                   params=tparams, \
-                                   prefix="lstm")
-        
-        proj = lstm_encoder.output
         # The average of outputs of cells is the final output of the lstm network.
         proj = (proj * self.mask[:, :, None]).sum(axis=0)
         proj = proj / self.mask.sum(axis=0)[:, None]
@@ -77,6 +72,14 @@ class lstm(algorithm):
         self.tparams = tparams
         self._params = self.getParameters()
         self._setParameters(input_params)
+    
+    def connect_layers(self, emb, mask, dim_proj, tparams):
+        lstm_encoder = lstm_layer(emb, mask=mask, \
+                                   dim_proj=dim_proj, \
+                                   params=tparams, \
+                                   prefix="lstm")
+        proj = lstm_encoder.output
+        return proj
     
     def init_params(self, options):
         """
@@ -144,14 +147,14 @@ class lstm(algorithm):
         return valid_function
     
     def getTestingFunction(self, cr):
-        x, mask, y = cr.getTestSet()
+        x, mask, y, index_x = cr.getTestSet()
         test_function = theano.function([],
-                                                                self.cost,
+                                                                [self.cost, self.proj],
                                                                 givens={self.x : x,
                                                                                  self.mask : mask,
                                                                                   self.y : y},
                                                                  name='valid_function')
-        return test_function
+        return index_x, y, test_function
     
     def getDeployFunction(self, param):
         print "Compiling computing graph."

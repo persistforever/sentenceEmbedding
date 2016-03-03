@@ -30,7 +30,8 @@ class CorpusReader:
     valid_set = None
     test_set = None
     
-    def __init__(self, maxSentenceWordNum, minSentenceWordNum, dataset_file, stopword_file, dict_file):
+    def __init__(self, maxSentenceWordNum, minSentenceWordNum, \
+                 dataset_file, stopword_file, dict_file, train_valid_test_rate=[0.999, 0.0003, 0.0007]):
         self.maxSentenceWordNum = maxSentenceWordNum
         self.minSentenceWordNum = minSentenceWordNum
         
@@ -39,9 +40,12 @@ class CorpusReader:
         print "stop words: ", len(self.stopwords)
         
         # Load w2v model data from file
-        self.dictionary = loadDictionary(dict_file, "gbk")
+        self.dictionary, self.dictionary_reverse = loadDictionary(dict_file, "gbk")
+        self.dictionary_reverse[len(self.dictionary)] = "<BEG>"
         self.dictionary["<BEG>"] = self.sentenceStartFlagIndex = len(self.dictionary)
+        self.dictionary_reverse[len(self.dictionary)] = "<END>"
         self.dictionary["<END>"] = self.sentenceEndFlagIndex = len(self.dictionary) 
+        self.dictionary_reverse[len(self.dictionary)] = "<UNK>"
         self.dictionary["<UNK>"] = self.sentenceUnkFlagIndex = len(self.dictionary)
         print "dictionary size: ", len(self.dictionary)
         
@@ -53,7 +57,8 @@ class CorpusReader:
                                   self.stopwords ,
                                     maxSentenceWordNum=maxSentenceWordNum,
                                     minSentenceWordNum=minSentenceWordNum,
-                                    charset="gbk")
+                                    charset="gbk",
+                                    train_valid_test_rate=train_valid_test_rate)
         
         print "train_set size: ", len(self.train_set[0])
         print "valid_set size: ", len(self.valid_set[0])
@@ -61,6 +66,9 @@ class CorpusReader:
 
     def shuffle(self):
         pass
+    
+    def getDictionary(self):
+        return self.dictionary, self.dictionary_reverse
     
     def getYDimension(self):
         return len(self.train_set[1][0])
@@ -93,7 +101,7 @@ class CorpusReader:
             x_data[:lengths[idx], idx] = s
             x_mask[:lengths[idx], idx] = 1.
             
-        return x_data, x_mask, batch_y
+        return x_data, x_mask, batch_y, batch_x
         
     def getTrainSet(self, scope=None):
         return self.__getSet(scope, self.train_set[0], self.train_set[1])
@@ -104,7 +112,8 @@ class CorpusReader:
     def getTestSet(self, scope=None):
         return self.__getSet(scope, self.test_set[0], self.test_set[1])
         
-def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, minSentenceWordNum=1, charset="utf-8"):
+def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, \
+                  minSentenceWordNum=1, charset="utf-8", train_valid_test_rate=[0.999, 0.0003, 0.0007]):
     f = open(filename, "r")
     docList = list()
     for line0 in f:
@@ -123,7 +132,8 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
         if tokenCount < minSentenceWordNum or tokenCount > maxSentenceWordNum:
             continue
         
-        sentence = map(lambda word: dictionary[word] if (word in dictionary and word not in stopwords) else dictionary["<UNK>"], sentence)
+        sentence = map(lambda word: dictionary[word] \
+                       if (word in dictionary and word not in stopwords) else dictionary["<UNK>"], sentence)
         sentence = [dictionary["<BEG>"]] + sentence + [dictionary["<END>"]]
         sentenceEmbedding = tokens[1].strip()
         sentenceEmbedding = map(lambda x: string.atof(x), sentenceEmbedding.split(" "))
@@ -132,9 +142,11 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, mi
         
     f.close()
     
-    train_rate = int(math.floor(0.999 * len(docList)))
-    valid_rate = int(math.floor(0.9993 * len(docList)))
-    test_rate = int(math.floor(1.0 * len(docList)))
+    train_rate = int(math.floor(train_valid_test_rate[0] * len(docList)))
+    valid_rate = int(math.floor((train_valid_test_rate[0] + \
+                                 train_valid_test_rate[1]) * len(docList)))
+    test_rate = int(math.floor((train_valid_test_rate[0] + \
+                                train_valid_test_rate[1] + train_valid_test_rate[2]) * len(docList)))
     
     train_set = docList[0:train_rate]
     valid_set = docList[train_rate + 1:valid_rate]
@@ -169,17 +181,19 @@ def loadStopwords(filename, charset="utf-8"):
 def loadDictionary(filename, charset="utf-8"):
     f = codecs.open(filename, "r", charset)
     d = dict()
+    d_reverse = dict()
     for line in f :
         data = line.strip("\r\n").split("\t")
-        word = data[0]
+        word = data[0].strip()
         index = string.atoi(data[1])
         if word in d.keys():
             print "Word '%s' appears more than once in dict." % word
             assert False
 #         d[word] = np.array(vec, dtype=theano.config.floatX)
         d[word] = index
+        d_reverse[index] = word
     f.close()
-    return d
+    return d, d_reverse
 
 if __name__ == '__main__':
     cr = CorpusReader(1, 1, "data/dialog", "data/punct", "data/dialog_w2vFlat")
