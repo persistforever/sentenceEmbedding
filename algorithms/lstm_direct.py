@@ -8,7 +8,6 @@ class lstm_direct(lstm):
     def get_lstm_output(self, proj, mask):
         # The last of outputs of cells is the final output of the lstm network.
         proj = proj[-1]
-        proj = proj / mask.sum(axis=0)[:, None]
         return proj
     
   
