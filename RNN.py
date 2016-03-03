@@ -20,8 +20,9 @@ if __name__ == '__main__':
 #     print "text_file : ", text_file
 #     print "w2v_file : ", w2v_file
     
-    cr = CorpusReader(20, 1, dataset_file, stopwords_file, dict_file, train_valid_test_rate=[0.7, 0.1, 0.2])
-    cr_scope = [0, 100000]
+    cr = CorpusReader(20, 1, dataset_file, stopwords_file, \
+                      dict_file, train_valid_test_rate=[0.999, 0.0003, 0.0007])
+    cr_scope = [0, 9999999999]
     batchSize = 12800
     save_freq = 1
     param_path = None
