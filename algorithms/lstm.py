@@ -105,7 +105,7 @@ class lstm(algorithm):
     def getParameters(self):
         return self.tparams.values()
     
-    def getTrainFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE"):
+    def getTrainFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE", batch_repeat=5):
         optimizer = self.options["optimizer"]
         
         train_set_num, valid_set_num, test_set_num = cr.getSize()
@@ -113,7 +113,6 @@ class lstm(algorithm):
         n_batches = (cr_scope[1] - cr_scope[0] - 1) / batchSize + 1
         train_set_batch_num = (train_set_num - 1) / batchSize + 1
         n_batches = min(n_batches, train_set_batch_num)
-
         
         validSet = cr.getValidSet([0, 100])
         testSet = cr.getTestSet([0, 1000])
@@ -126,9 +125,10 @@ class lstm(algorithm):
         def update(index):
             if self.options["use_dropout"]:
                 self.use_noise.set_value(1.)
-            x, mask, y,_ = cr.getTrainSet([index * batchSize, (index + 1) * batchSize])
-            cost = f_grad_shared(x, mask, y)
-            f_update(self.options["lrate"])
+            x, mask, y, _ = cr.getTrainSet([index * batchSize, (index + 1) * batchSize])
+            for i in xrange(batch_repeat):
+                cost = f_grad_shared(x, mask, y)
+                f_update(self.options["lrate"])
             return cost
         
         def clear_func():
@@ -137,7 +137,7 @@ class lstm(algorithm):
         return update, n_batches, clear_func
     
     def getValidingFunction(self, cr):
-        x, mask, y,_ = cr.getValidSet()
+        x, mask, y, _ = cr.getValidSet()
         valid_function = theano.function([],
                                                                 self.cost,
                                                                 givens={self.x : x,

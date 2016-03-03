@@ -11,7 +11,7 @@ from sklearn import metrics
 import time
 import sys
 def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
-          shuffle=False, batch_repeat=5):
+          shuffle=False):
     if shuffle:
         cr.shuffle()
     train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
@@ -26,8 +26,7 @@ def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
         epoch = epoch + 1
         #######################
         for i in xrange(n_batches):
-            for j in xrange(batch_repeat):
-                error = train_model(i)
+            error = train_model(i)
             ite = ite + 1
             if(ite % save_freq == 0):
                 print "@iter: ", ite,
