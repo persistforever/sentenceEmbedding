@@ -9,13 +9,13 @@ import heapq
 import cPickle
 from sklearn import metrics
 import time
-def train(cr, cr_scope, param_path, params, model, batchSize=5, save_freq=10, \
+def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
           shuffle=False):
     if shuffle:
         cr.shuffle()
     train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
     valid_model = model.getValidingFunction(cr)
-    test_model = model.getTestingFunction(cr)
+    test_x, test_y, test_model = model.getTestingFunction(cr)
     print "Start to train."
     epoch = 0
     n_epochs = 1000
@@ -38,15 +38,30 @@ def train(cr, cr_scope, param_path, params, model, batchSize=5, save_freq=10, \
                 print "Saved."
         
         print "Now testing model."
-        print "Test Error: ", param_path, " -> ", str(test_model())
+        
+        cost , pred_y = test_model()
+        
+        print "Test Error: ", param_path, " -> ", str(cost)
         
         if shuffle and epoch < n_epochs:
             cr.shuffle()
             clear_func()
             train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
 #             exit()
-                
-def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model):
+
+def vtMatch(cr, model):
+    test_x, test_y, test_model = model.getTestingFunction(cr)
+    _, dictionary_reverse = cr.getDictionary()
+    cost , pred_y = test_model()
+    print "Average error : ", cost
+    print "sentence\tpredicting_embedding\ttrue_embedding"
+    for t_x, t_y, p_y in zip(test_x, test_y, pred_y):
+        s = string.join(map(lambda x:dictionary_reverse[x], t_x)) + "\t[ "
+        s += string.join(map(lambda x:str(x), t_y.getA1()), " ") + " ]\t[ "
+        s += string.join(map(lambda x:str(x), p_y), " ") + " ]"
+        print s
+    
+def searchNeighbour(cr, model):
     class sentenceScorePair(object):
         def __init__(self, priority, sentence):
             self.priority = priority
@@ -58,7 +73,7 @@ def searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_fil
     base_str = u"你 芳龄 啊"
     base_type = 0
      
-    test_fun = model.getTestFunction(params)
+    test_fun = model.getTestingFunction(cr)
     
     matrix, snum, _, _ = cr.getSentenceMatrix(base_str, base_type, 4)
     baseSentenceEmbedding, basePred, _ = test_fun(matrix, [0, 1], [0, snum])
