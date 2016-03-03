@@ -126,7 +126,7 @@ class lstm(algorithm):
         def update(index):
             if self.options["use_dropout"]:
                 self.use_noise.set_value(1.)
-            x, mask, y = cr.getTrainSet([index * batchSize, (index + 1) * batchSize])
+            x, mask, y,_ = cr.getTrainSet([index * batchSize, (index + 1) * batchSize])
             cost = f_grad_shared(x, mask, y)
             f_update(self.options["lrate"])
             return cost
@@ -137,7 +137,7 @@ class lstm(algorithm):
         return update, n_batches, clear_func
     
     def getValidingFunction(self, cr):
-        x, mask, y = cr.getValidSet()
+        x, mask, y,_ = cr.getValidSet()
         valid_function = theano.function([],
                                                                 self.cost,
                                                                 givens={self.x : x,
