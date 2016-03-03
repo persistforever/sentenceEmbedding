@@ -156,7 +156,7 @@ class lstm(algorithm):
                                                                  name='valid_function')
         return index_x, y, test_function
     
-    def getDeployFunction(self, param):
+    def getDeployFunction(self):
         print "Compiling computing graph."
         deploy_model = theano.function(
              [self.x, self.mask],

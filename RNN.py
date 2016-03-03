@@ -44,7 +44,7 @@ if __name__ == '__main__':
         params = loadParamsVal(param_path)
         from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
-                      use_dropout=True, activation_function=theano.tensor.nnet.sigmoid)
+                      use_dropout=True, activation_function=theano.tensor.tanh)
     elif alg == "lstm_multi":
         param_path = data_folder + "/model/lstm_multi.model"
         params = loadParamsVal(param_path)

@@ -1,5 +1,5 @@
-# coding=utf-8
-# -*- coding: utf-8 -*-
+# coding=gbk
+# -*- coding: gbk -*-
 import os
 import string
 import numpy
@@ -69,66 +69,54 @@ def searchNeighbour(cr, model):
         def __cmp__(self, other):
             return -cmp(self.priority, other.priority)
     
-    base_str = u"ä½  èŠ³é¾„ å•Š"
+    base_str = u"Äã ·¼Áä °¡"
     base_type = 0
      
-    test_fun = model.getTestingFunction(cr)
+    test_fun = model.getDeployFunction()
     
-    matrix, snum, _, _ = cr.getSentenceMatrix(base_str, base_type, 4)
-    baseSentenceEmbedding, basePred, _ = test_fun(matrix, [0, 1], [0, snum])
+    base_x, base_mask = cr.getSentenceMatrix(base_str)
+    base_pred_y = test_fun(base_x, base_mask)
+    
+    _, dictionary_reverse = cr.getDictionary()
     
     sQueue = []
     heapq.heapify(sQueue)
-    pQueue = []
-    heapq.heapify(pQueue)
     
     count = 0
     topCount = 10
     step = 1000
-    while(count <= 1000000):
-        corpus = cr.getCorpus([count, count + step], 4)
+    while(count <= 1000000000):
+        corpus = cr.getTrainSet([count, count + step])
         if(corpus is None):
             break
-        dialogMatrixes, docSentenceNums, sentenceWordNums, sentenceList, sentenceTypeList = corpus
-        sentenceEmbedding, pred, average_sentence = test_fun(dialogMatrixes, docSentenceNums, sentenceWordNums)
         
-        for (text, embedding, predictingEmbedding, referenceEmbedding, sentenceType) \
-                    in zip(sentenceList, sentenceEmbedding, pred, average_sentence, sentenceTypeList):
-            text = string.join(text, " ")
-            text = codecs.encode(text, "utf-8", "ignore")
-            if(sentenceType == base_type):
-                sScore = numpy.sqrt(numpy.sum(numpy.square(baseSentenceEmbedding - embedding)))
-                if(len(sQueue) == 0 or sScore < sQueue[0].priority):
-                    flag = 1
-                    for o in sQueue:
-                        if(o.sentence == text):
-                            flag = 0
-                            break
-                    if(flag == 1):
-                        heapq.heappush(sQueue, sentenceScorePair(sScore, text))
-                        if(len(sQueue) > topCount):
-                            heapq.heappop(sQueue) 
-            else:
-                pScore = numpy.sqrt(numpy.sum(numpy.square(basePred - referenceEmbedding)))
-                if(len(pQueue) == 0 or pScore < pQueue[0].priority):
-                    flag = 1
-                    for o in pQueue:
-                        if(o.sentence == text):
-                            flag = 0
-                            break
-                    if(flag == 1):
-                        heapq.heappush(pQueue, sentenceScorePair(pScore, text))
-                        if(len(pQueue) > topCount):
-                            heapq.heappop(pQueue)         
-                
-            print "-----------------------------similar(RMSE)--------------------------------------------------"
-            for o in sQueue:
-                print o.priority, "\t", o.sentence
-            print "-----------------------------prediction--------------------------------------------------"
-            for o in pQueue:
-                print o.priority, "\t", o.sentence
-        count += step
-
+        target_x, target_mask, _, index_x = corpus
+        target_y = test_fun(target_x, target_mask)
+        
+        
+        for t_x, t_y in zip(index_x, target_y):
+            target_str = string.join(map(lambda x:dictionary_reverse[x], t_x), "")
+            sScore = numpy.sqrt(numpy.sum(numpy.square(base_pred_y - t_y)))
+            if(len(sQueue) == 0 or sScore < sQueue[0].priority):
+                flag = 1
+                for o in sQueue:
+                    if(o.sentence == target_str):
+                        flag = 0
+                        break
+                if(flag == 1):
+                    heapq.heappush(sQueue, sentenceScorePair(sScore, target_str))
+                    if(len(sQueue) > topCount):
+                        heapq.heappop(sQueue) 
+        
+            if count % 1000 == 0:
+                print "-----------------------------similar(RMSE)--------------------------------------------------"
+                for o in sQueue:
+                    print "%-15f\t%s" % (o.priority, o.sentence)
+            count += step
+            
+    print "-----------------------------similar(RMSE)--------------------------------------------------"
+    for o in sQueue:
+        print "%-15f\t%s" % (o.priority, o.sentence)
         
 def chaos(cr, param_path, params, model, method="kmeans", output_cluser_res=True):
     test_fun = model.getTestFunction(params)

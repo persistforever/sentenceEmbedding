@@ -111,7 +111,20 @@ class CorpusReader:
         
     def getTestSet(self, scope=None):
         return self.__getSet(scope, self.test_set[0], self.test_set[1])
+
+    def getSentenceMatrix(self, sentence):
+        dictionary = self.dictionary
         
+        sentence = sentence.split(" ")
+        sentence = map(lambda word: dictionary[word] \
+                       if (word in dictionary and word not in self.stopwords) else dictionary["<UNK>"], sentence)
+        sentence = [dictionary["<BEG>"]] + sentence + [dictionary["<END>"]]
+        
+        x_data = numpy.transpose(numpy.asmatrix(sentence, 'int64'))
+        x_mask = numpy.ones((len(sentence), 1))
+        
+        return x_data, x_mask
+
 def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, \
                   minSentenceWordNum=1, charset="utf-8", train_valid_test_rate=[0.999, 0.0003, 0.0007]):
     f = open(filename, "r")
@@ -135,6 +148,9 @@ def loadSentences(filename, dictionary, stopwords, maxSentenceWordNum=100000, \
         sentence = map(lambda word: dictionary[word] \
                        if (word in dictionary and word not in stopwords) else dictionary["<UNK>"], sentence)
         sentence = [dictionary["<BEG>"]] + sentence + [dictionary["<END>"]]
+        
+        
+        
         sentenceEmbedding = tokens[1].strip()
         sentenceEmbedding = map(lambda x: string.atof(x), sentenceEmbedding.split(" "))
          
