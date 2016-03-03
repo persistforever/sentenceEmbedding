@@ -17,18 +17,15 @@ from algorithms.util import getError
 
 
 class lstm(algorithm):
-    def __init__(self, n_words, hidden_dim, ydim, input_params=None):
+    def __init__(self, n_words, hidden_dim, ydim, input_params=None, use_dropout=True, use_media_layer=True):
         self.options = options = {
            "dim_proj": hidden_dim,  # word embeding dimension and LSTM number of hidden units.
-            "patience": 10,  # Number of epoch to wait before early stop if no progress
-            "decay_c": 0.,  # Weight decay for the classifier applied to the U weights.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
             "n_words":n_words,  # Vocabulary size
             "optimizer": self.adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
-            "batch_size":16,  # The batch size during training.
             "ydim": ydim,  # The dimension of target embedding.    noise_std=0.,
-            "use_dropout": True,
-            "use_media_layer": True
+            "use_dropout": use_dropout,
+            "use_media_layer": use_media_layer
         }
         
         # numpy paramters.
