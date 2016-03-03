@@ -45,6 +45,12 @@ if __name__ == '__main__':
         from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
                       use_dropout=True, activation_function=theano.tensor.tanh)
+    elif(alg == "lstm_direct"):
+        param_path = data_folder + "/model/lstm_direct.model"
+        params = loadParamsVal(param_path)
+        from algorithms.lstm_direct import lstm_direct 
+        model = lstm_direct(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
+                      use_dropout=True, activation_function=theano.tensor.tanh)
     elif alg == "lstm_multi":
         param_path = data_folder + "/model/lstm_multi.model"
         params = loadParamsVal(param_path)

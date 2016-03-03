@@ -55,10 +55,11 @@ class lstm(algorithm):
         proj = self.connect_layers(emb, mask=self.mask, \
                                    dim_proj=options['dim_proj'], tparams=tparams, activation_function=tensor.nnet.sigmoid)
         
-        # The average of outputs of cells is the final output of the lstm network.
-        proj = (proj * self.mask[:, :, None]).sum(axis=0)
-        proj = proj / self.mask.sum(axis=0)[:, None]
+#         # The average of outputs of cells is the final output of the lstm network.
+#         proj = (proj * self.mask[:, :, None]).sum(axis=0)
+#         proj = proj / self.mask.sum(axis=0)[:, None]
             
+        proj = self.get_lstm_output(proj, self.mask)
         
         if options['use_dropout']:
             proj = dropout_layer(proj, self.use_noise, trng)
@@ -80,6 +81,12 @@ class lstm(algorithm):
                                    prefix="lstm",
                                    activation_function=tensor.nnet.sigmoid)
         proj = lstm_encoder.output
+        return proj
+    
+    def get_lstm_output(self, proj, mask):
+        # The average of outputs of cells is the final output of the lstm network.
+        proj = (proj * mask[:, :, None]).sum(axis=0)
+        proj = proj / mask.sum(axis=0)[:, None]
         return proj
     
     def init_params(self, options):
