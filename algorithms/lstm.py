@@ -68,7 +68,7 @@ class lstm(algorithm):
 #         pred = tensor.nnet.softmax(tensor.dot(proj, tparams['U']) + tparams['b'])
         
         self.proj = proj
-        self.cost = tensor.mean(getError(self.proj, self.y, errorType="cos"))
+        self.cost = tensor.mean(getError(self.proj, self.y, errorType="RMSE"))
         self.tparams = tparams
         self._params = self.getParameters()
         self._setParameters(input_params)
