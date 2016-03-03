@@ -9,8 +9,9 @@ import heapq
 import cPickle
 from sklearn import metrics
 import time
+import sys
 def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
-          shuffle=False):
+          shuffle=False, batch_repeat=5):
     if shuffle:
         cr.shuffle()
     train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
@@ -20,22 +21,21 @@ def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
     epoch = 0
     n_epochs = 1000
     ite = 0
-    
+    print param_path
     while (epoch < n_epochs):
         epoch = epoch + 1
         #######################
-        for i in range(n_batches):
-            errorNum = train_model(i)
+        for i in xrange(n_batches):
+            for j in xrange(batch_repeat):
+                error = train_model(i)
             ite = ite + 1
             if(ite % save_freq == 0):
-                print
-                print "@iter: ", ite
-                print "Training Error : " , param_path , " -> ", str(errorNum)
-                print "Valid Error: ", param_path, " -> ", str(valid_model())
+                print "@iter: ", ite,
+                print "\tTraining Error : " , str(error),
+                print "\tValid Error: ", str(valid_model()),
                 # Save train_model
-                print "Saving parameters."
+                print "\tSaving parameters."
                 saveParamsVal(param_path, model.getParameters())
-                print "Saved."
         
         print "Now testing model."
         

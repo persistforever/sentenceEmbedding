@@ -22,7 +22,7 @@ if __name__ == '__main__':
     
     cr = CorpusReader(20, 1, dataset_file, stopwords_file, dict_file, train_valid_test_rate=[0.7, 0.1, 0.2])
     cr_scope = [0, 100000]
-    batchSize = 128
+    batchSize = 1280
     save_freq = 1
     param_path = None
     model = None
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/lstm_multi.model"
         params = loadParamsVal(param_path)
         from algorithms.lstm_multiple_layers import lstm_multiple_layers 
-        model = lstm_multiple_layers(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, 4)
+        model = lstm_multiple_layers(len(cr.dictionary) + 1, 1024, cr.getYDimension(), params, 4)
         
     print "param_path: ", param_path
     if(len(sys.argv) < 3):
