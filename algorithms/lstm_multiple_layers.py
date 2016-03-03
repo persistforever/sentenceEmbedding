@@ -4,10 +4,14 @@
 from algorithms.lstm import lstm
 from algorithms.layers.lstm_layer import lstm_layer
 
+import theano.tensor as tensor
+
 class lstm_multiple_layers(lstm):
-    def __init__(self, n_words, hidden_dim, ydim, input_params, layers_num=4):
+    def __init__(self, n_words, hidden_dim, ydim, input_params, layers_num=4, \
+                 activation_function=tensor.nnet.sigmoid):
         self.layers_num = layers_num
-        lstm.__init__(self, n_words, hidden_dim, ydim, input_params)
+        lstm.__init__(self, n_words, hidden_dim, ydim, input_params, \
+                      activation_function=tensor.nnet.sigmoid)
     
     def connect_layers(self, emb, mask, dim_proj, tparams):
         stack_below = emb
