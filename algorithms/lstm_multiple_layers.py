@@ -13,14 +13,16 @@ class lstm_multiple_layers(lstm):
         lstm.__init__(self, n_words, hidden_dim, ydim, input_params, \
                       activation_function=tensor.nnet.sigmoid)
     
-    def connect_layers(self, emb, mask, dim_proj, tparams):
+    def connect_layers(self, emb, mask, dim_proj, tparams, \
+                        activation_function=tensor.nnet.sigmoid):
         stack_below = emb
         
         for i in xrange(self.layers_num):
             lstm_encoder = lstm_layer(stack_below, mask=self.mask, \
                                        dim_proj=dim_proj, \
                                        params=tparams, \
-                                       prefix="lstm" + str(i))
+                                       prefix="lstm" + str(i), \
+                                       activation_function=tensor.nnet.sigmoid)
             stack_below = lstm_encoder.output
             
         return stack_below
