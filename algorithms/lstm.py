@@ -17,7 +17,9 @@ from algorithms.util import getError
 
 
 class lstm(algorithm):
-    def __init__(self, n_words, hidden_dim, ydim, input_params=None, use_dropout=True, use_media_layer=True):
+    def __init__(self, n_words, hidden_dim, ydim, \
+                 input_params=None, use_dropout=True, use_media_layer=True, \
+                 activation_function=tensor.nnet.sigmoid):
         self.options = options = {
            "dim_proj": hidden_dim,  # word embeding dimension and LSTM number of hidden units.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
@@ -50,7 +52,8 @@ class lstm(algorithm):
                                                     n_samples,
                                                     options['dim_proj']])
         
-        proj = self.connect_layers(emb, mask=self.mask, dim_proj=options['dim_proj'], tparams=tparams)
+        proj = self.connect_layers(emb, mask=self.mask, \
+                                   dim_proj=options['dim_proj'], tparams=tparams, activation_function=tensor.nnet.sigmoid)
         
         # The average of outputs of cells is the final output of the lstm network.
         proj = (proj * self.mask[:, :, None]).sum(axis=0)
@@ -61,7 +64,7 @@ class lstm(algorithm):
             proj = dropout_layer(proj, self.use_noise, trng)
     
         if options['use_media_layer']:
-            proj = tensor.nnet.sigmoid(tensor.dot(proj, tparams['U']) + tparams['b'])
+            proj = tensor.dot(proj, tparams['U']) + tparams['b']
 #         pred = tensor.nnet.softmax(tensor.dot(proj, tparams['U']) + tparams['b'])
         
         self.proj = proj
@@ -70,11 +73,13 @@ class lstm(algorithm):
         self._params = self.getParameters()
         self._setParameters(input_params)
     
-    def connect_layers(self, emb, mask, dim_proj, tparams):
+    def connect_layers(self, emb, mask, dim_proj, \
+                       tparams, activation_function=tensor.nnet.sigmoid):
         lstm_encoder = lstm_layer(emb, mask=mask, \
                                    dim_proj=dim_proj, \
                                    params=tparams, \
-                                   prefix="lstm")
+                                   prefix="lstm",
+                                   activation_function=tensor.nnet.sigmoid)
         proj = lstm_encoder.output
         return proj
     

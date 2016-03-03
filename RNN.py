@@ -1,5 +1,6 @@
 from loadSentenceWordIndex import CorpusReader
 from measure import searchNeighbour, train, chaos, loadParamsVal, vtMatch
+import theano.tensor
 
 import sys
 if __name__ == '__main__':
@@ -43,7 +44,7 @@ if __name__ == '__main__':
         params = loadParamsVal(param_path)
         from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
-                      use_dropout=True, use_media_layer=True)
+                      use_dropout=True, use_media_layer=True, activation_function=theano.tensor.nnet.sigmoid)
     elif alg == "lstm_multi":
         param_path = data_folder + "/model/lstm_multi.model"
         params = loadParamsVal(param_path)

@@ -8,7 +8,8 @@ def _p(pp, name):
     return '%s_%s' % (pp, name)
 
 class lstm_layer:
-    def __init__(self, state_below, mask,  dim_proj, params, prefix='lstm'):
+    def __init__(self, state_below, mask, dim_proj, params, prefix='lstm', \
+                 activation_function=tensor.nnet.sigmoid):
         """
         Init the LSTM parameter:
     
@@ -44,10 +45,15 @@ class lstm_layer:
             preact = tensor.dot(h_, params[_p(prefix, 'U')])
             preact += x_
     
-            i = tensor.nnet.sigmoid(_slice(preact, 0, dim_proj))
-            f = tensor.nnet.sigmoid(_slice(preact, 1, dim_proj))
-            o = tensor.nnet.sigmoid(_slice(preact, 2, dim_proj))
-            c = tensor.tanh(_slice(preact, 3, dim_proj))
+            i = activation_function(_slice(preact, 0, dim_proj))
+            f = activation_function(_slice(preact, 1, dim_proj))
+            o = activation_function(_slice(preact, 2, dim_proj))
+            c = activation_function(_slice(preact, 3, dim_proj))
+            
+#             i = tensor.nnet.sigmoid(_slice(preact, 0, dim_proj))
+#             f = tensor.nnet.sigmoid(_slice(preact, 1, dim_proj))
+#             o = tensor.nnet.sigmoid(_slice(preact, 2, dim_proj))
+#             c = tensor.tanh(_slice(preact, 3, dim_proj))
     
             c = f * c_ + i * c
             c = m_[:, None] * c + (1. - m_)[:, None] * c_
@@ -57,7 +63,7 @@ class lstm_layer:
     
             return h, c
     
-        state_below = (tensor.dot(state_below, params[_p(prefix, 'W')]) +
+        state_below = (tensor.dot(state_below, params[_p(prefix, 'W')]) + 
                        params[_p(prefix, 'b')])
     
         dim_proj = dim_proj
