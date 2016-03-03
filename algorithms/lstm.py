@@ -18,7 +18,7 @@ from algorithms.util import getError
 
 class lstm(algorithm):
     def __init__(self, n_words, hidden_dim, ydim, \
-                 input_params=None, use_dropout=True, use_media_layer=True, \
+                 input_params=None, use_dropout=True,
                  activation_function=tensor.nnet.sigmoid):
         self.options = options = {
            "dim_proj": hidden_dim,  # word embeding dimension and LSTM number of hidden units.
@@ -27,7 +27,7 @@ class lstm(algorithm):
             "optimizer": self.adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
             "ydim": ydim,  # The dimension of target embedding.    noise_std=0.,
             "use_dropout": use_dropout,
-            "use_media_layer": use_media_layer
+#             "use_media_layer": use_media_layer
         }
         
         # numpy paramters.
@@ -63,8 +63,7 @@ class lstm(algorithm):
         if options['use_dropout']:
             proj = dropout_layer(proj, self.use_noise, trng)
     
-        if options['use_media_layer']:
-            proj = tensor.dot(proj, tparams['U']) + tparams['b']
+        proj = tensor.dot(proj, tparams['U']) + tparams['b']
 #         pred = tensor.nnet.softmax(tensor.dot(proj, tparams['U']) + tparams['b'])
         
         self.proj = proj
@@ -92,10 +91,9 @@ class lstm(algorithm):
         randn = numpy.random.rand(options['n_words'],
                                   options['dim_proj'])
         params['Wemb'] = (0.01 * randn).astype(config.floatX)
-        if options['use_media_layer']:
-            params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
-                                                options['ydim']).astype(config.floatX)
-            params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
+        params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
+                                            options['ydim']).astype(config.floatX)
+        params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
         return params
         
     def init_tparams(self, params):

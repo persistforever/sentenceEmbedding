@@ -44,12 +44,12 @@ if __name__ == '__main__':
         params = loadParamsVal(param_path)
         from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
-                      use_dropout=True, use_media_layer=True, activation_function=theano.tensor.nnet.sigmoid)
+                      use_dropout=True, activation_function=theano.tensor.nnet.sigmoid)
     elif alg == "lstm_multi":
         param_path = data_folder + "/model/lstm_multi.model"
         params = loadParamsVal(param_path)
         from algorithms.lstm_multiple_layers import lstm_multiple_layers 
-        model = lstm_multiple_layers(len(cr.dictionary) + 1, 1024, cr.getYDimension(), params, 4)
+        model = lstm_multiple_layers(len(cr.dictionary) + 1, 512, cr.getYDimension(), params, 4)
         
     print "param_path: ", param_path
     if(len(sys.argv) < 3):
