@@ -97,9 +97,12 @@ class lstm(algorithm):
         # embedding
         randn = numpy.random.rand(options['n_words'],
                                   options['dim_proj'])
-        params['Wemb'] = (0.01 * randn).astype(config.floatX)
-        params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
+        params['Wemb'] = (1 * randn).astype(config.floatX)
+        params['U'] = 1 * numpy.random.randn(options['dim_proj'],
                                             options['ydim']).astype(config.floatX)
+#         params['Wemb'] = (0.01 * randn).astype(config.floatX)
+#         params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
+#                                             options['ydim']).astype(config.floatX)
         params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
         return params
         
