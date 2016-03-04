@@ -26,6 +26,9 @@ class lstm_layer:
                                ortho_weight(dim_proj)], axis=1)
         params[_p(prefix, 'U')] = theano.shared(U, name=_p(prefix, 'U'))
         b = numpy.zeros((4 * dim_proj,))
+        
+        # bigger forget
+        b[dim_proj + 1:2 * dim_proj] = 2 
         params[_p(prefix, 'b')] = theano.shared(b.astype(config.floatX), _p(prefix, 'b'))
     
         nsteps = state_below.shape[0]
