@@ -1,5 +1,5 @@
 from loadDialog import CorpusReader
-from measure import searchNeighbour, train, chaos, loadParamsVal
+from measure import searchNeighbour2, train, chaos, loadParamsVal
 
 import sys
 if __name__ == '__main__':
@@ -86,14 +86,14 @@ if __name__ == '__main__':
     
     if(len(sys.argv) < 3):
 #         chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-        train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
+        train(cr, cr_scope,param_path, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
     else:
         mode = sys.argv[2]
         print "mode: ", mode
         if(mode == "test"):
             chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
         elif(mode == "searchNeighbour"):
-            searchNeighbour(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
+            searchNeighbour2(cr, model)
         elif(mode == "train"):
             train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
     print "All finished!"

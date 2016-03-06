@@ -59,7 +59,78 @@ def vtMatch(cr, model):
         s += string.join(map(lambda x:str(x), t_y.getA1()), " ") + " ]\t[ "
         s += string.join(map(lambda x:str(x), p_y), " ") + " ]"
         print s
+
+     
+def searchNeighbour2(cr, model):
+    class sentenceScorePair(object):
+        def __init__(self, priority, sentence):
+            self.priority = priority
+            self.sentence = sentence
+    # [array(0.11831409498308831)]        
+        def __cmp__(self, other):
+            return -cmp(self.priority, other.priority)
     
+    base_str = u"Äã ·¼Áä °¡"
+    base_type = 0
+     
+    test_fun = model.getDeployFunction()
+    
+    matrix, snum, _, _ = cr.getSentenceMatrix(base_str, base_type, 4)
+    baseSentenceEmbedding, basePred, _ = test_fun(matrix, [0, 1], [0, snum])
+    
+    sQueue = []
+    heapq.heapify(sQueue)
+    pQueue = []
+    heapq.heapify(pQueue)
+    
+    count = 0
+    topCount = 10
+    step = 1000
+    while(count <= 1000000):
+        corpus = cr.getCorpus([count, count + step], 4)
+        if(corpus is None):
+            break
+        dialogMatrixes, docSentenceNums, sentenceWordNums, sentenceList, sentenceTypeList = corpus
+        sentenceEmbedding, pred, average_sentence = test_fun(dialogMatrixes, docSentenceNums, sentenceWordNums)
+        
+        for (text, embedding, predictingEmbedding, referenceEmbedding, sentenceType) \
+                    in zip(sentenceList, sentenceEmbedding, pred, average_sentence, sentenceTypeList):
+            text = string.join(text, " ")
+            text = codecs.encode(text, "utf-8", "ignore")
+            if(sentenceType == base_type):
+                sScore = numpy.sqrt(numpy.sum(numpy.square(baseSentenceEmbedding - embedding)))
+                if(len(sQueue) == 0 or sScore < sQueue[0].priority):
+                    flag = 1
+                    for o in sQueue:
+                        if(o.sentence == text):
+                            flag = 0
+                            break
+                    if(flag == 1):
+                        heapq.heappush(sQueue, sentenceScorePair(sScore, text))
+                        if(len(sQueue) > topCount):
+                            heapq.heappop(sQueue) 
+            else:
+                pScore = numpy.sqrt(numpy.sum(numpy.square(basePred - referenceEmbedding)))
+                if(len(pQueue) == 0 or pScore < pQueue[0].priority):
+                    flag = 1
+                    for o in pQueue:
+                        if(o.sentence == text):
+                            flag = 0
+                            break
+                    if(flag == 1):
+                        heapq.heappush(pQueue, sentenceScorePair(pScore, text))
+                        if(len(pQueue) > topCount):
+                            heapq.heappop(pQueue)         
+                
+            print "-----------------------------similar(RMSE)--------------------------------------------------"
+            for o in sQueue:
+                print o.priority, "\t", o.sentence
+            print "-----------------------------prediction--------------------------------------------------"
+            for o in pQueue:
+                print o.priority, "\t", o.sentence
+        count += step
+
+
 def searchNeighbour(cr, model):
     class sentenceScorePair(object):
         def __init__(self, priority, sentence):

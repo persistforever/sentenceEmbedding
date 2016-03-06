@@ -31,7 +31,7 @@ class CorpusReader:
     test_set = None
     
     def __init__(self, maxSentenceWordNum, minSentenceWordNum, \
-                 dataset_file, stopword_file, dict_file, train_valid_test_rate=[0.999, 0.0003, 0.0007]):
+                 dataset_file, stopword_file=None, dict_file=None, word_embedding_file=None, train_valid_test_rate=[0.999, 0.0003, 0.0007]):
         self.maxSentenceWordNum = maxSentenceWordNum
         self.minSentenceWordNum = minSentenceWordNum
         
@@ -39,15 +39,22 @@ class CorpusReader:
         self.stopwords = loadStopwords(stopword_file, "gbk")
         print "stop words: ", len(self.stopwords)
         
-        # Load w2v model data from file
-        self.dictionary, self.dictionary_reverse = loadDictionary(dict_file, "gbk")
-        self.dictionary_reverse[len(self.dictionary)] = "<BEG>"
-        self.dictionary["<BEG>"] = self.sentenceStartFlagIndex = len(self.dictionary)
-        self.dictionary_reverse[len(self.dictionary)] = "<END>"
-        self.dictionary["<END>"] = self.sentenceEndFlagIndex = len(self.dictionary) 
-        self.dictionary_reverse[len(self.dictionary)] = "<UNK>"
-        self.dictionary["<UNK>"] = self.sentenceUnkFlagIndex = len(self.dictionary)
-        print "dictionary size: ", len(self.dictionary)
+        if word_embedding_file and dict_file:
+            raise Exception("Either word_embedding or dict can be the input.")
+            
+        if not word_embedding_file is None:
+            self.dictionary, self.dictionary_reverse, self.embeddingMatrix = loadWordEmbedding(word_embedding_file, "gbk")
+        
+        if not dict_file is None:
+            # Load w2v model data from file
+            self.dictionary, self.dictionary_reverse = loadDictionary(dict_file, "gbk")
+            self.dictionary_reverse[len(self.dictionary)] = "<BEG>"
+            self.dictionary["<BEG>"] = self.sentenceStartFlagIndex = len(self.dictionary)
+            self.dictionary_reverse[len(self.dictionary)] = "<END>"
+            self.dictionary["<END>"] = self.sentenceEndFlagIndex = len(self.dictionary) 
+            self.dictionary_reverse[len(self.dictionary)] = "<UNK>"
+            self.dictionary["<UNK>"] = self.sentenceUnkFlagIndex = len(self.dictionary)
+            print "dictionary size: ", len(self.dictionary)
         
         # Load documents
         self.train_set, \
@@ -211,6 +218,9 @@ def loadDictionary(filename, charset="utf-8"):
     f.close()
     return d, d_reverse
 
+def loadWordEmbedding(filename, charset="utf-8"):
+    with codecs.open(filename, "r", charset) as f:
+         
 if __name__ == '__main__':
     cr = CorpusReader(1, 1, "data/dialog", "data/punct", "data/dialog_w2vFlat")
     cr.getCorpus([0, 10])

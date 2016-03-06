@@ -21,12 +21,12 @@ class algorithm:
             with @getTrainFunction, but without updating operation."""
         pass
     
-        @abstractmethod
-        def getTestingFunction(self):
-            """
-                :Return a theano function which works on the test data. The output of this fuction is similar 
-                with @getTrainFunction, but without updating operation."""
-            pass
+    @abstractmethod
+    def getTestingFunction(self):
+        """
+            :Return a theano function which works on the test data. The output of this fuction is similar 
+            with @getTrainFunction, but without updating operation."""
+        pass
 
     @abstractmethod
     def getDeployFunction(self, param):

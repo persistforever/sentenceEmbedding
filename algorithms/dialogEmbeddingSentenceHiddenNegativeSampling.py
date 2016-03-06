@@ -109,7 +109,13 @@ class sentenceEmbeddingHiddenNegativeSampling(algorithm):
             sentenceWordNums.set_value([])
         return train_model, n_batches, clear_memory
     
-    def getTestFunction(self, param):
+    def getValidingFunction(self, cr):
+        pass
+    
+    def getTestingFunction(self, cr):
+        pass
+    
+    def getDeployFunction(self):
         print "Compiling computing graph."
         deploy_model = theano.function(
              [self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount],
