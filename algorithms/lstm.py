@@ -112,7 +112,7 @@ class lstm(algorithm):
     def getParameters(self):
         return self.tparams.values()
     
-    def getTrainFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE", batch_repeat=5):
+    def getTrainingFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE", batch_repeat=5):
         optimizer = self.options["optimizer"]
         
         train_set_num, valid_set_num, test_set_num = cr.getSize()

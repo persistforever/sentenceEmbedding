@@ -48,7 +48,7 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
 #         for p in layer1.params:
 #             print p.get_value()
     
-    def getTrainFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE"):
+    def getTrainingFunction(self, cr, cr_scope, batchSize=10, errorType="RMSE"):
         normalizationError = 0
         for p in self._params:
             normalizationError += 0.5 / batchSize * T.sum(T.square(p))
@@ -132,7 +132,13 @@ class sentenceEmbeddingMulticonvHiddenNegativeSampling(algorithm):
             sentenceWordNums.set_value([])
         return train_model, n_batches, clear_memory
     
-    def getTestFunction(self, param):
+    def getValidingFunction(self, cr):
+        pass
+    
+    def getTestingFunction(self, cr):
+        pass
+    
+    def getDeployFunction(self):
         print "Compiling computing graph."
         deploy_model = theano.function(
              [self._corpusWithEmbeddings, self._dialogSentenceCount, self._sentenceWordCount],

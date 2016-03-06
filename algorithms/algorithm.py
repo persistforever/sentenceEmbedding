@@ -7,7 +7,7 @@ class algorithm:
         self._params = None
     
     @abstractmethod
-    def getTrainFunction(self):
+    def getTrainingFunction(self):
         """
             :Return a theano function, which is a training fucntion whose
             input value is a index indicates the serial number of input mini-batch.
