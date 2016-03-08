@@ -1,6 +1,8 @@
-from loadSentenceWordIndex import CorpusReader
-from measure import searchNeighbour, train, chaos, loadParamsVal, vtMatch
+# from measure import searchNeighbour, train, chaos, loadParamsVal, vtMatch
+from task.train import train
 import theano.tensor
+from util.parameter_operation import loadParamsVal
+
 
 import sys
 if __name__ == '__main__':
@@ -9,22 +11,29 @@ if __name__ == '__main__':
     dataset_file = data_folder + "/text"
     stopwords_file = "data/punct"
     dict_file = data_folder + "/dict"
+    charset = "gbk"
+    word_embedding_file = "data/word2vec_flat_big_gbk"
     print "data_folder: ", data_folder
     print "dataset_file: ", dataset_file
     print "stopwords_file: ", stopwords_file
     print "dict_file: ", dict_file
+    print "word_embedding_file: ", word_embedding_file
+    print "charset: ", charset
     
 #     w2v_file = data_folder + "/w2vFlat"
-#     w2v_file = "data/word2vec_flat_big"
 #     w2v_file = "data/xianliao/w2vFlat"
     
 #     print "text_file : ", text_file
 #     print "w2v_file : ", w2v_file
     
-    cr = CorpusReader(20, 1, dataset_file, stopwords_file, \
-                      dict_file, train_valid_test_rate=[0.999, 0.0003, 0.0007])
-    cr_scope = [0, 9999999999]
-    batchSize = 12800
+    
+    from dataloader.load_data import CorpusReaderSentence
+    cr = CorpusReaderSentence(dataset_file, stopword_file=stopwords_file, \
+                      dict_file=dict_file, word_embedding_file=word_embedding_file, \
+                       train_valid_test_rate=[0.999, 0.0003, 0.0007], \
+                       charset=charset, maxSentenceWordNum=20, minSentenceWordNum=1)
+#     cr_scope = [0, 9999999999]
+    batchSize = 128
     save_freq = 1
     param_path = None
     model = None
@@ -45,6 +54,12 @@ if __name__ == '__main__':
         from algorithms.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
                       use_dropout=True, activation_function=theano.tensor.tanh)
+    elif(alg == "lstm_small_given_embedding"):
+        param_path = data_folder + "/model/lstm_small_given_embedding.model"
+        params = loadParamsVal(param_path)
+        from algorithms.lstm_given_embedding import lstm_given_embedding 
+        model = lstm_given_embedding(200, cr.getYDimension(), params, \
+                      use_dropout=True, activation_function=theano.tensor.tanh)
     elif(alg == "lstm_direct"):
         param_path = data_folder + "/model/lstm_direct.model"
         params = loadParamsVal(param_path)
@@ -59,16 +74,10 @@ if __name__ == '__main__':
         
     print "param_path: ", param_path
     if(len(sys.argv) < 3):
-        train(cr, cr_scope, param_path, model, batchSize=batchSize, save_freq=save_freq)
+        train(cr, param_path, model, batchSize=batchSize, save_freq=save_freq)
     else:
         mode = sys.argv[2]
         print "mode: ", mode
-        if(mode == "test"):
-            chaos(cr, param_path, params, model)
-        elif(mode == "searchNeighbour"):
-            searchNeighbour(cr, model)
-        elif(mode == "vt_match"):
-            vtMatch(cr, model)
-        elif(mode == "train"):
+        if(mode == "train"):
             train(cr, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
     print "All finished!"

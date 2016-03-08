@@ -70,7 +70,7 @@ def searchNeighbour2(cr, model):
         def __cmp__(self, other):
             return -cmp(self.priority, other.priority)
     
-    base_str = u"你 芳龄 啊"
+    base_str = u"如果 我们 微 信 公众 号 不 申请 微 信 支付 , 能 用 其他 支付 吗 ?  如 支付 宝 、 网银 等 方式 支付 "
     base_type = 0
      
     test_fun = model.getDeployFunction()

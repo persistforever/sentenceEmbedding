@@ -1,9 +1,11 @@
 from  algorithms.util import ortho_weight
 import numpy
 import theano
-from theano import config
 import theano.tensor as tensor
 from algorithms.util import numpy_floatX
+import config
+
+
 def _p(pp, name):
     return '%s_%s' % (pp, name)
 
@@ -26,7 +28,7 @@ class lstm_layer:
                                ortho_weight(dim_proj)], axis=1)
         params[_p(prefix, 'U')] = theano.shared(U, name=_p(prefix, 'U'))
         b = numpy.zeros((4 * dim_proj,))
-        params[_p(prefix, 'b')] = theano.shared(b.astype(config.floatX), _p(prefix, 'b'))
+        params[_p(prefix, 'b')] = theano.shared(b.astype(config.globalFloatType()), _p(prefix, 'b'))
     
         nsteps = state_below.shape[0]
         if state_below.ndim == 3:

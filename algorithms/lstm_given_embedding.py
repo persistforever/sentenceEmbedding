@@ -5,25 +5,26 @@ from theano import tensor as T, printing
 import theano
 import numpy
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
-from algorithms.algorithm import algorithm
-from util import numpy_floatX
-from theano import config
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
+from util import numpy_floatX
 from algorithms.layers.lstm_layer import lstm_layer
 from algorithms.layers.dropout_layer import dropout_layer
 from algorithms.util import getError
+from algorithms.lstm import lstm
 
+import config
 
-class lstm(algorithm):
-    def __init__(self, n_words, hidden_dim, ydim, \
+class lstm_given_embedding(lstm):
+    def __init__(self, hidden_dim, ydim, embedding_matrix, \
                  input_params=None, use_dropout=True,
                  activation_function=tensor.nnet.sigmoid):
+        self.__embedding_matrix = embedding_matrix
+        
         self.options = options = {
            "dim_proj": hidden_dim,  # word embeding dimension and LSTM number of hidden units.
             "lrate": 0.0001,  # Learning rate for sgd (not used for adadelta and rmsprop)
-            "n_words":n_words,  # Vocabulary size
             "optimizer": self.adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
             "ydim": ydim,  # The dimension of target embedding.    noise_std=0.,
             "use_dropout": use_dropout,
@@ -42,13 +43,17 @@ class lstm(algorithm):
         self.use_noise = theano.shared(numpy_floatX(0.))
     
         self.x = tensor.matrix('x', dtype='int64')
-        self.mask = tensor.matrix('mask', dtype=config.floatX)
-        self.y = tensor.matrix('y', dtype=config.floatX)
+        self.mask = tensor.matrix('mask', dtype=config.globalFloatType())
+        self.y = tensor.matrix('y', dtype=config.globalFloatType())
+    
+        self.word_embedding = tensor.matrix('word_embedding', dtype=config.globalFloatType())
+    
+        self.all_embedding = tensor.concatenate((tparams['Wemb_special'], self.word_embedding), axis=0)
     
         n_timesteps = self.x.shape[0]
         n_samples = self.x.shape[1]
     
-        emb = tparams['Wemb'][self.x.flatten()].reshape([n_timesteps,
+        emb = self.all_embedding[self.x.flatten()].reshape([n_timesteps,
                                                     n_samples,
                                                     options['dim_proj']])
         
@@ -83,34 +88,20 @@ class lstm(algorithm):
         proj = lstm_encoder.output
         return proj
     
-    def get_lstm_output(self, proj, mask):
-        # The average of outputs of cells is the final output of the lstm network.
-        proj = (proj * mask[:, :, None]).sum(axis=0)
-        proj = proj / mask.sum(axis=0)[:, None]
-        return proj
     
     def init_params(self, options):
         """
         Global (not LSTM) parameter. For the embeding and the classifier.
         """
         params = OrderedDict()
-        # embedding
-        randn = numpy.random.rand(options['n_words'],
+        # embedding of 4 special types.
+        randn = numpy.random.rand(4,
                                   options['dim_proj'])
-        params['Wemb'] = (0.01 * randn).astype(config.floatX)
+        params['Wemb_special'] = (0.01 * randn).astype(config.globalFloatType())
         params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
-                                            options['ydim']).astype(config.floatX)
-        params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
+                                            options['ydim']).astype(config.globalFloatType())
+        params['b'] = numpy.zeros((options['ydim'],)).astype(config.globalFloatType())
         return params
-        
-    def init_tparams(self, params):
-        tparams = OrderedDict()
-        for kk, pp in params.iteritems():
-            tparams[kk] = theano.shared(params[kk], name=kk)
-        return tparams
-    
-    def getParameters(self):
-        return self.tparams.values()
     
     def getTrainingFunction(self, cr, batchSize=10, errorType="RMSE", batch_repeat=5):
         optimizer = self.options["optimizer"]
@@ -122,7 +113,7 @@ class lstm(algorithm):
         lr = tensor.scalar(name='lr')
         grads = tensor.grad(self.cost, wrt=self.tparams.values())
         f_grad_shared, f_update = optimizer(lr, self.tparams, grads,
-                                    self.x, self.mask, self.y, self.cost)
+                                    self.x, self.mask, self.y, self.cost, cr.getEmbeddingMatrix())
         
         def update_function(index):
             if self.options["use_dropout"]:
@@ -144,7 +135,8 @@ class lstm(algorithm):
                                                                 self.cost,
                                                                 givens={self.x : x,
                                                                                  self.mask : mask,
-                                                                                  self.y : y},
+                                                                                  self.y : y,
+                                                                                  self.word_embedding: cr.getEmbeddingMatrix()},
                                                                  name='valid_function')
         return valid_function
     
@@ -154,15 +146,17 @@ class lstm(algorithm):
                                                                 [self.cost, self.proj],
                                                                 givens={self.x : x,
                                                                                  self.mask : mask,
-                                                                                  self.y : y},
+                                                                                  self.y : y,
+                                                                                  self.word_embedding: cr.getEmbeddingMatrix()},
                                                                  name='valid_function')
         return test_function, (index_x, y)
     
-    def getDeployFunction(self):
+    def getDeployFunction(self, cr):
         print "Compiling computing graph."
         deploy_model = theano.function(
              [self.x, self.mask],
              [self.proj],
+             givens={self.word_embedding: cr.getEmbeddingMatrix()},
              allow_input_downcast=True
          )
         print "Compiled."
@@ -171,7 +165,7 @@ class lstm(algorithm):
             return deploy_model(x, mask)
         return dm
     
-    def adadelta(self, lr, tparams, grads, x, mask, y, cost):
+    def adadelta(self, lr, tparams, grads, x, mask, y, cost, word_embedding):
         """
         An adaptive learning rate optimizer
     
@@ -215,7 +209,7 @@ class lstm(algorithm):
                  for rg2, g in zip(running_grads2, grads)]
     
         f_grad_shared = theano.function([x, mask, y], cost, updates=zgup + rg2up,
-                                        name='adadelta_f_grad_shared')
+                                        name='adadelta_f_grad_shared', givens={self.word_embedding:word_embedding})
     
         updir = [-tensor.sqrt(ru2 + 1e-6) / tensor.sqrt(rg2 + 1e-6) * zg
                  for zg, ru2, rg2 in zip(zipped_grads,
@@ -227,6 +221,7 @@ class lstm(algorithm):
     
         f_update = theano.function([lr], [], updates=ru2up + param_up,
                                    on_unused_input='ignore',
-                                   name='adadelta_f_update')
+                                   name='adadelta_f_update',
+                                   givens={self.word_embedding:word_embedding})
     
         return f_grad_shared, f_update
