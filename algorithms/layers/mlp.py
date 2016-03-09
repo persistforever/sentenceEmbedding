@@ -79,6 +79,8 @@ class HiddenLayer(object):
         #        compared to tanh
         #        We have no info for other function, so we use the same as
         #        tanh.
+        print "prefix n_in: %d" % (n_in)
+        print "prefix n_out: %d" % (n_out)
         W_values = numpy.asarray(
             rng.uniform(
                 low=-numpy.sqrt(6. / (n_in + n_out)),

@@ -63,27 +63,45 @@ def loadDictionaryFile(filename, charset="utf-8"):
     return d, d_reverse
 
 def loadWordEmbeddingsFile(filename, charset="utf-8"):
-    pool = ThreadPool(12)
-    lineList = list()
     with codecs.open(filename, "r", charset) as f:
+        d = OrderedDict()
+        lastSize = -1
         for line in f :
-            lineList.append(line)
-
-    d = OrderedDict()
-    def processLine(line):
-        data = line.strip().split()
-        word = data[0]
-        if len(word) == 0:
-            return None
-        if word == "</s>":
-            word = "<END>"
-        vec = map(lambda s:string.atof(s), data[1:]);
-        return (word, vec)
-     
-    pairs = pool.map(processLine, lineList)   
-    for word, vec in pairs:
-        d[word] = vec
+            data = line.strip().split(" ")
+            word = data[0]
+            if word == "</s>":
+                word = "<END>"
+            vec = map(lambda s:string.atof(s), data[1:]);
+            if lastSize != -1 and len(vec) != lastSize:
+                print lastSize
+                print len(vec)
+                raise Exception(line)
+            lastSize = len(vec)
+            d[word] = vec
     return d
+
+# def loadWordEmbeddingsFile(filename, charset="utf-8"):
+#     pool = ThreadPool(12)
+#     lineList = list()
+#     with codecs.open(filename, "r", charset) as f:
+#         for line in f :
+#             lineList.append(line)
+# 
+#     d = OrderedDict()
+#     def processLine(line):
+#         data = line.strip().split()
+#         word = data[0]
+#         if len(word) == 0:
+#             return None
+#         if word == "</s>":
+#             word = "<END>"
+#         vec = map(lambda s:string.atof(s), data[1:]);
+#         return (word, vec)
+#      
+#     pairs = pool.map(processLine, lineList)   
+#     for word, vec in pairs:
+#         d[word] = vec
+#     return d
   
 def loadSentence(sentenceStr, minSentenceWordNum, maxSentenceWordNum, \
                  dictionary, stopwords=None):

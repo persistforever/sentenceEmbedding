@@ -12,7 +12,7 @@ if __name__ == '__main__':
     stopwords_file = "data/punct"
     dict_file = data_folder + "/dict"
     charset = "gbk"
-    word_embedding_file = "data/word2vec_flat_big_gbk"
+    word_embedding_file = "data/plp.word.vec"
     print "data_folder: ", data_folder
     print "dataset_file: ", dataset_file
     print "stopwords_file: ", stopwords_file
