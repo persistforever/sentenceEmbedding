@@ -2,6 +2,9 @@ import cPickle
 import os
 
 def saveParamsVal(path, params):
+    dirname = os.path.dirname(path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
     with open(path, 'wb') as f:  # open file with write-mode
         for param in params:
 #             print param.get_value()

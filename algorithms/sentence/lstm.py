@@ -1,13 +1,11 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
-from theano import tensor as T, printing
 import theano
 import numpy
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 from algorithms.algorithm import algorithm
-from util import numpy_floatX
-from theano import config
+from algorithms.util import numpy_floatX
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
@@ -15,6 +13,7 @@ from algorithms.layers.lstm_layer import lstm_layer
 from algorithms.layers.dropout_layer import dropout_layer
 from algorithms.util import getError
 
+from config import globalFloatType
 
 class lstm(algorithm):
     def __init__(self, n_words, hidden_dim, ydim, \
@@ -42,8 +41,8 @@ class lstm(algorithm):
         self.use_noise = theano.shared(numpy_floatX(0.))
     
         self.x = tensor.matrix('x', dtype='int64')
-        self.mask = tensor.matrix('mask', dtype=config.floatX)
-        self.y = tensor.matrix('y', dtype=config.floatX)
+        self.mask = tensor.matrix('mask', dtype=globalFloatType())
+        self.y = tensor.matrix('y', dtype=globalFloatType())
     
         n_timesteps = self.x.shape[0]
         n_samples = self.x.shape[1]
@@ -97,10 +96,10 @@ class lstm(algorithm):
         # embedding
         randn = numpy.random.rand(options['n_words'],
                                   options['dim_proj'])
-        params['Wemb'] = (0.01 * randn).astype(config.floatX)
+        params['Wemb'] = (0.01 * randn).astype(globalFloatType())
         params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
-                                            options['ydim']).astype(config.floatX)
-        params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
+                                            options['ydim']).astype(globalFloatType())
+        params['b'] = numpy.zeros((options['ydim'],)).astype(globalFloatType())
         return params
         
     def init_tparams(self, params):

@@ -1,7 +1,7 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
-from algorithms.lstm import lstm
+from lstm import lstm
 from algorithms.layers.lstm_layer import lstm_layer
 
 import theano.tensor as tensor

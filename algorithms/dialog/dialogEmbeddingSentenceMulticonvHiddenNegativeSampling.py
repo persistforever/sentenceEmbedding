@@ -1,12 +1,12 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from layers.mlp import HiddenLayer
+from algorithms.layers.mlp import HiddenLayer
 from theano import tensor as T, printing
 import theano
 import numpy
-from  layers.sentenceEmbeddingMultiNN import SentenceEmbeddingMultiNN
+from  algorithms.layers.sentenceEmbeddingMultiNN import SentenceEmbeddingMultiNN
 from algorithms.algorithm import algorithm
-import util
+import algorithms.util as util
 import config
 import string
 

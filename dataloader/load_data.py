@@ -203,6 +203,12 @@ class CorpusReader:
     def getEmbeddingMatrix(self):
         return numpy.matrix(self.word_embedding_matrx, dtype=config.globalFloatType())
     
+    def getEmbeddingMatrixWithoutSpecialFlag(self):
+        
+        s = set(["<EMPTY>", "<BEG>", "<END>", "<UNK>"])
+        
+        return numpy.matrix(self.word_embedding_matrx[len(s):], dtype=config.globalFloatType()), s
+    
     def getTrainSet(self, scope=None):
         return self.getModelInput(scope, self.train_set[0], self.train_set[1])
         

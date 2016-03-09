@@ -44,34 +44,46 @@ if __name__ == '__main__':
     else:
         alg = sys.argv[1]
     if(alg == "lstm"):
-        param_path = data_folder + "/model/lstm.model"
+        param_path = data_folder + "/model/sentence/lstm.model"
         params = loadParamsVal(param_path)
-        from algorithms.lstm import lstm 
+        from algorithms.sentence.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 5120, cr.getYDimension(), params)
     elif(alg == "lstm_small"):
-        param_path = data_folder + "/model/lstm_small.model"
+        param_path = data_folder + "/model/sentence/lstm_small.model"
         params = loadParamsVal(param_path)
-        from algorithms.lstm import lstm 
+        from algorithms.sentence.lstm import lstm 
         model = lstm(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
                       use_dropout=True, activation_function=theano.tensor.tanh)
     elif(alg == "lstm_small_given_embedding"):
-        param_path = data_folder + "/model/lstm_small_given_embedding.model"
+        param_path = data_folder + "/model/sentence/lstm_small_given_embedding.model"
         params = loadParamsVal(param_path)
-        from algorithms.lstm_given_embedding import lstm_given_embedding 
-        model = lstm_given_embedding(200, cr.getYDimension(), params, \
-                      use_dropout=True, activation_function=theano.tensor.tanh)
+        
+        embedding, specialList = cr.getEmbeddingMatrixWithoutSpecialFlag()
+        if len(specialList) != 4:
+            raise Exception("The number of special flags in this algorithm should just be 4.")
+        
+        from algorithms.sentence.lstm_given_embedding import lstm_given_embedding 
+        model = lstm_given_embedding(hidden_dim=200, embedding_matrix=embedding , \
+                        ydim=cr.getYDimension(), input_params=params, \
+                        use_dropout=True, activation_function=theano.tensor.tanh)
     elif(alg == "lstm_direct"):
-        param_path = data_folder + "/model/lstm_direct.model"
+        param_path = data_folder + "/model/sentence/lstm_direct.model"
         params = loadParamsVal(param_path)
-        from algorithms.lstm_direct import lstm_direct 
+        from algorithms.sentence.lstm_direct import lstm_direct 
         model = lstm_direct(len(cr.dictionary) + 1, 128, cr.getYDimension(), params, \
                       use_dropout=True, activation_function=theano.tensor.tanh)
     elif alg == "lstm_multi":
-        param_path = data_folder + "/model/lstm_multi.model"
+        param_path = data_folder + "/model/sentence/lstm_multi.model"
         params = loadParamsVal(param_path)
-        from algorithms.lstm_multiple_layers import lstm_multiple_layers 
+        from algorithms.sentence.lstm_multiple_layers import lstm_multiple_layers 
         model = lstm_multiple_layers(len(cr.dictionary) + 1, 512, cr.getYDimension(), params, 4)
-        
+    elif alg == "CNN_single":
+        param_path = data_folder + "/model/sentence/cnn_single.model"
+        params = loadParamsVal(param_path)
+        from algorithms.sentence.cnn_single import cnn_single 
+        model = cnn_single(word_embedding_dim=200, ydim=100, \
+                           embedding_matrix=cr.getEmbeddingMatrix(), size=[1024, 3, 200], input_params=params)
+    
     print "param_path: ", param_path
     if(len(sys.argv) < 3):
         train(cr, param_path, model, batchSize=batchSize, save_freq=save_freq)

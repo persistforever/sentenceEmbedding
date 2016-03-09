@@ -1,4 +1,4 @@
-from loadDialog import CorpusReader
+from bak.loadDialog import CorpusReader
 from measure import searchNeighbour2, train, chaos, loadParamsVal
 
 import sys
@@ -28,39 +28,39 @@ if __name__ == '__main__':
     else:
         alg = sys.argv[1]
     if(alg == "averageHidden"):
-        from algorithms.dialogEmbeddingSentenceHiddenAverage import sentenceEmbeddingHiddenAverage
+        from algorithms.dialog.dialogEmbeddingSentenceHiddenAverage import sentenceEmbeddingHiddenAverage
         param_path = data_folder + "/model/average_hidden.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingHiddenAverage(params)
     elif(alg == "average"):
-        from algorithms.dialogEmbeddingSentenceDirectAverage import sentenceEmbeddingDirectAverage
+        from algorithms.dialog.dialogEmbeddingSentenceDirectAverage import sentenceEmbeddingDirectAverage
         param_path = data_folder + "/model/average.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingDirectAverage(params)
     elif(alg == "direct"):
-        from algorithms.dialogEmbeddingSentenceDirect import sentenceEmbeddingDirect
+        from algorithms.dialog.dialogEmbeddingSentenceDirect import sentenceEmbeddingDirect
         param_path = data_folder + "/model/direct.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingDirect(params)
     elif(alg == "negativeSampling"):
-        from algorithms.dialogEmbeddingSentenceDirectNegativeSampling import sentenceEmbeddingDirectNegativeSampling
+        from algorithms.dialog.dialogEmbeddingSentenceDirectNegativeSampling import sentenceEmbeddingDirectNegativeSampling
         param_path = data_folder + "/model/direct_negative.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingDirectNegativeSampling(params)
     elif(alg == "negativeSamplingHidden"):
-        from algorithms.dialogEmbeddingSentenceHiddenNegativeSampling import sentenceEmbeddingHiddenNegativeSampling
+        from algorithms.dialog.dialogEmbeddingSentenceHiddenNegativeSampling import sentenceEmbeddingHiddenNegativeSampling
         param_path = data_folder + "/model/hidden_negative.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingHiddenNegativeSampling(params)
     elif(alg == "negativeSamplingMulticonvWithHidden"):
-        from algorithms.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
+        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
         param_path = data_folder + "/model/hidden_negative_multiconv.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)])
         batchSize = 200
         save_freq = 10
     elif(alg == "negativeSamplingShuffleMulticonvWithHidden"):
-        from algorithms.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
+        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
         param_path = data_folder + "/model/hidden_negative_shuffle_multiconv.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, sentenceLayerNodesNum=[1000, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)])
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         save_freq = 10
         shuffle = True
     elif(alg == "negativeSamplingShuffleMulticonvWithHiddenAverageMode"):
-        from algorithms.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
+        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
         param_path = data_folder + "/model/hidden_negative_shuffle_multiconv_average_mode.model"
         params = loadParamsVal(param_path)
         model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, \
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         save_freq = 10
         shuffle = True
     elif(alg == "justAverage"):
-        from algorithms.dialogEmbeddingSentenceJustAverage import sentenceEmbeddingJustAverage
+        from algorithms.dialog.dialogEmbeddingSentenceJustAverage import sentenceEmbeddingJustAverage
         param_path = data_folder + "/model/just_average.model"
         params = None
         model = sentenceEmbeddingJustAverage(params)
