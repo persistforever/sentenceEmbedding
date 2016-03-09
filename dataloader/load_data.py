@@ -66,7 +66,7 @@ def loadWordEmbeddingsFile(filename, charset="utf-8"):
     with codecs.open(filename, "r", charset) as f:
         d = OrderedDict()
         for line in f :
-            data = line.strip("\r\n").split(" ")
+            data = line.strip("\r\n").split()
             word = data[0]
             if word == "</s>":
                 word = "<END>"
