@@ -62,5 +62,8 @@ class CNN_sentence:
         sentenceResults = T.reshape(sentence_output, [n_samples, sentenceLayerNodesNum])
         
         self.output = sentenceResults
+        print "sentenceLayerNodesNum", sentenceLayerNodesNum
+        print "word_embedding_dim", word_embedding_dim
+        print "sentenceLayerNodesSize[1]", sentenceLayerNodesSize[1]
         self.outputDimension = sentenceLayerNodesNum * (word_embedding_dim - sentenceLayerNodesSize[1] + 1) 
     

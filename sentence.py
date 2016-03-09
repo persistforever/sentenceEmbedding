@@ -12,7 +12,7 @@ if __name__ == '__main__':
     stopwords_file = "data/punct"
     dict_file = data_folder + "/dict"
     charset = "gbk"
-    word_embedding_file = "data/plp.word.vec"
+    word_embedding_file = "data/plp.word.vec.small"
     print "data_folder: ", data_folder
     print "dataset_file: ", dataset_file
     print "stopwords_file: ", stopwords_file
@@ -81,8 +81,8 @@ if __name__ == '__main__':
         param_path = data_folder + "/model/sentence/cnn_single.model"
         params = loadParamsVal(param_path)
         from algorithms.sentence.cnn_single import cnn_single 
-        model = cnn_single(word_embedding_dim=200, ydim=100, \
-                           embedding_matrix=cr.getEmbeddingMatrix(), size=[1024, 3, 200], input_params=params)
+        model = cnn_single(word_embedding_dim=100, ydim=100, \
+                           embedding_matrix=cr.getEmbeddingMatrix(), size=[1024, 3, 100], input_params=params)
     
     print "param_path: ", param_path
     if(len(sys.argv) < 3):
