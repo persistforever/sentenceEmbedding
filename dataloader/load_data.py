@@ -14,15 +14,14 @@ from collections import OrderedDict
 import config
 
 def loadStopwordsFile(filename, charset="utf-8"):
-    f = codecs.open(filename, "r", charset)
     d = set()
-    for line in f :
-        d.add(line.strip("\r\n"))
-    f.close()
+    with codecs.open(filename, "r", charset) as f: 
+        for line in f :
+            d.add(line.strip("\r\n"))
     return d
 
 def loadDictionaryFile(filename, charset="utf-8"):
-    d = OrderedDict()
+    d = dict()
     d_reverse = OrderedDict()
     
     d_reverse[len(d)] = "<EMPTY>"
@@ -64,7 +63,7 @@ def loadDictionaryFile(filename, charset="utf-8"):
 
 def loadWordEmbeddingsFile(filename, charset="utf-8"):
     with codecs.open(filename, "r", charset) as f:
-        d = OrderedDict()
+        d = dict()
         lastSize = -1
         for line in f :
             data = line.strip().split(" ")
@@ -79,29 +78,6 @@ def loadWordEmbeddingsFile(filename, charset="utf-8"):
             lastSize = len(vec)
             d[word] = vec
     return d
-
-# def loadWordEmbeddingsFile(filename, charset="utf-8"):
-#     pool = ThreadPool(12)
-#     lineList = list()
-#     with codecs.open(filename, "r", charset) as f:
-#         for line in f :
-#             lineList.append(line)
-# 
-#     d = OrderedDict()
-#     def processLine(line):
-#         data = line.strip().split()
-#         word = data[0]
-#         if len(word) == 0:
-#             return None
-#         if word == "</s>":
-#             word = "<END>"
-#         vec = map(lambda s:string.atof(s), data[1:]);
-#         return (word, vec)
-#      
-#     pairs = pool.map(processLine, lineList)   
-#     for word, vec in pairs:
-#         d[word] = vec
-#     return d
   
 def loadSentence(sentenceStr, minSentenceWordNum, maxSentenceWordNum, \
                  dictionary, stopwords=None):
@@ -173,7 +149,6 @@ def merge_dict_and_embedding(word_index_dict, word_embedding_dict):
         embedding_matrx.append(zeros)
     else:
         embedding_matrx.append(word_embedding_dict["<UNK>"])
-    
     
     for word in inter_set:
         if word in word_dict.keys():
@@ -310,12 +285,16 @@ class CorpusReaderDialogPair(CorpusReader):
         self.maxSentenceWordNum = maxSentenceWordNum
         self.minSentenceWordNum = minSentenceWordNum
         CorpusReader.__init__(self, dataset_file, stopword_file=stopword_file, \
-                              dict_file=dict_file, word_embedding_file=word_embedding_file, charset=charset)
+                              dict_file=dict_file, word_embedding_file=word_embedding_file, charset=charset, \
+                              train_valid_test_rate=train_valid_test_rate)
         
     def shuffle(self):
         pass
-        
-    def getModelInput(self, scope, x, y):
+    
+    def getTrainSet(self, scope=None, shuffle=False):
+        return self.getModelInput(scope, self.train_set[0], self.train_set[1], shuffle=shuffle)
+    
+    def getModelInput(self, scope, x, y, shuffle=False):
         if scope:
             scope = list(scope)
             scope[1] = np.min([scope[1], len(x)])
@@ -326,6 +305,13 @@ class CorpusReaderDialogPair(CorpusReader):
         
         batch_x = x[scope[0]:scope[1]]
         batch_y = y[scope[0]:scope[1]]
+        
+        if shuffle:
+            idx = range(len(batch_y))
+            numpy.random.shuffle(idx)
+            batch_y = [batch_y[i] for i in idx]
+
+        
         x_data, x_mask = getMaskData(batch_x)
         y_data, y_mask = getMaskData(batch_y)
         
@@ -333,10 +319,10 @@ class CorpusReaderDialogPair(CorpusReader):
     
 
     def loadData(self, dataset_file, charset="utf-8"):
-        with codecs.open(dataset_file, mode="r") as f:
+        with codecs.open(dataset_file, encoding=charset, mode="r") as f:
             docList = list()
             for line in f:
-                sentences = line.split(u"\t")
+                sentences = line.split("\t")
                 if len(sentences) <= self.minDialogSentenceNum:
                     continue
         
@@ -352,7 +338,7 @@ class CorpusReaderDialogPair(CorpusReader):
 
     def divide_data_post_process(self, train_set, valid_set, test_set):
         def len_argsort(seq):
-            return sorted(range(len(seq)), key=lambda x: max(len(seq[x][0], seq[x][1])))
+            return sorted(range(len(seq)), key=lambda x: max(len(seq[x][0]), len(seq[x][1])))
         
         sorted_index = len_argsort(train_set)
         train_set = [train_set[i] for i in sorted_index]

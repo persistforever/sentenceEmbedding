@@ -20,24 +20,17 @@ References:
 """
 __docformat__ = 'restructedtext en'
 
-
-import os
-import sys
-import timeit
-
 import numpy
 
 import theano
 import theano.tensor as T
+from layer import layer
 
+import config
 
-from logistic_sgd import LogisticRegression, load_data
-
-def _p(pp, name):
-    return '%s_%s' % (pp, name)
 # start-snippet-1
-class HiddenLayer(object):
-    def __init__(self, rng, input, n_in, n_out, \
+class FullyConnectedLayer(layer):
+    def __init__(self, rng, n_in, n_out, \
                  tparams=None, prefix="fully_conn", activation=T.tanh):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
@@ -64,7 +57,6 @@ class HiddenLayer(object):
         :param activation: Non linearity to be applied in the hidden
                            layer
         """
-        self.input = input
         # end-snippet-1
 
         # `W` is initialized with `W_values` which is uniformely sampled
@@ -79,35 +71,40 @@ class HiddenLayer(object):
         #        compared to tanh
         #        We have no info for other function, so we use the same as
         #        tanh.
-        print "prefix n_in: %d" % (n_in)
-        print "prefix n_out: %d" % (n_out)
+        
+        self.activation = activation
+        
+        print "%s n_in: %d" % (prefix, n_in)
+        print "%s n_out: %d" % (prefix, n_out)
         W_values = numpy.asarray(
             rng.uniform(
                 low=-numpy.sqrt(6. / (n_in + n_out)),
                 high=numpy.sqrt(6. / (n_in + n_out)),
                 size=(n_in, n_out)
             ),
-            dtype=theano.config.floatX
+            dtype=config.globalFloatType()
         )
-        if activation == theano.tensor.nnet.sigmoid:
+        if activation == T.nnet.sigmoid:
             W_values *= 4
 
-        W = theano.shared(value=W_values, name=_p(prefix, 'W'), borrow=True)
+        W = theano.shared(value=W_values, name=self._p(prefix, 'W'), borrow=True)
 
-        b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-        b = theano.shared(value=b_values, name=_p(prefix, 'b'), borrow=True)
+        b_values = numpy.zeros((n_out,), dtype=config.globalFloatType())
+        b = theano.shared(value=b_values, name=self._p(prefix, 'b'), borrow=True)
 
         self.W = W
         self.b = b
-        if tparams:
-            tparams[_p(prefix, 'W')] = self.W
-            tparams[_p(prefix, 'b')] = self.b
-
-        lin_output = T.dot(input, self.W) + self.b
-        self.output = (
-            lin_output if activation is None
-            else activation(lin_output)
-        )
+        if  not tparams is None:
+            tparams[self._p(prefix, 'W')] = self.W
+            tparams[self._p(prefix, 'b')] = self.b
         # parameters of the model
         self.params = [self.W, self.b]
+
+    def getOutput(self, input_data):
+        lin_output = T.dot(input_data, self.W) + self.b
+        output = (
+            lin_output if self.activation is None
+            else self.activation(lin_output)
+        )
+        return output
 

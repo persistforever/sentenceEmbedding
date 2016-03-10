@@ -1,6 +1,6 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from algorithms.layers.lstm_layer import lstm_layer
+from algorithms.layers.LSTMLayer import LSTMLayer
 
 from lstm import lstm
 

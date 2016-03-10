@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # from DocEmbeddingNNPadding import sentenceEmbeddingNN
 from lstm import lstm
-from algorithms.layers.lstm_layer import lstm_layer
+from algorithms.layers.LSTMLayer import LSTMLayer
 
 import theano.tensor as tensor
 
@@ -18,11 +18,10 @@ class lstm_multiple_layers(lstm):
         stack_below = emb
         
         for i in xrange(self.layers_num):
-            lstm_encoder = lstm_layer(stack_below, mask=self.mask, \
-                                       dim_proj=dim_proj, \
+            lstm_encoder = LSTMLayer(dim_proj=dim_proj, \
                                        params=tparams, \
                                        prefix="lstm" + str(i), \
                                        activation_function=tensor.nnet.sigmoid)
-            stack_below = lstm_encoder.output
+            stack_below = lstm_encoder.getOutput(stack_below, mask=self.mask)
             
         return stack_below

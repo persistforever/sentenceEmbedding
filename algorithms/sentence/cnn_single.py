@@ -3,14 +3,14 @@
 from collections import OrderedDict
 import theano
 import theano.tensor as T
-from algorithms.layers.mlp import HiddenLayer
+from algorithms.layers.FullyConnectedLayer import FullyConnectedLayer
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 import numpy
 
 from algorithms.util import numpy_floatX
-from algorithms.layers.CNN_sentence import CNN_sentence
-from algorithms.layers.dropout_layer import dropout_layer
+from algorithms.layers.CNNSentenceLayer import CNNSentenceLayer
+from algorithms.layers.DropoutLayer import DropoutLayer
 from algorithms.util import getError
 
 import config
@@ -60,7 +60,8 @@ class cnn_single(algorithm):
                                    activation_function=activation_function)
         
         if options['use_dropout']:
-            proj = dropout_layer(proj, self.use_noise, trng)
+            drop_layer = DropoutLayer()
+            proj = drop_layer.getOutput(proj, self.use_noise, trng)
     
         self.proj = proj
         self.cost = T.mean(getError(self.proj, self.y, errorType="RMSE"))
@@ -71,25 +72,24 @@ class cnn_single(algorithm):
     def connect_layers(self, options, emb, \
                        tparams, activation_function=T.nnet.sigmoid,):
         emb = emb.dimshuffle([1, 'x', 0, 2])
-        cnn = CNN_sentence(emb, \
-                                   word_embedding_dim=options["word_embedding_dim"], \
+        cnn_layer = CNNSentenceLayer(word_embedding_dim=options["word_embedding_dim"], \
                                    size=options["size"], \
                                    tparams=tparams, \
                                    prefix="cnn",
                                    activation_function=T.nnet.sigmoid,
                                    mode="max")
+        cnn = cnn_layer.getOutput(emb)
         
-        layer1 = HiddenLayer(
+        layer1 = FullyConnectedLayer(
                 rng=numpy.random.RandomState(23455),
-                input=cnn.output,
-                n_in=cnn.outputDimension,
+                n_in=cnn_layer.outputDimension,
                 n_out=options["ydim"],
                 tparams=tparams,
                 prefix="fully_conn",
                 activation=T.tanh
             )
         
-        return layer1.output
+        return layer1.getOutput(cnn)
     
     
     def init_params(self, options):
@@ -140,7 +140,7 @@ class cnn_single(algorithm):
                                                                 self.cost,
                                                                 givens={self.x : x,
                                                                                   self.y : y,
-                                                                                  self.word_embedding: cr.getEmbeddingMatrix()},
+                                                                                  self.word_embedding: self.__embedding_matrix},
                                                                  name='valid_function')
         return valid_function
     
@@ -150,7 +150,7 @@ class cnn_single(algorithm):
                                                                 [self.cost, self.proj],
                                                                 givens={self.x : x,
                                                                                   self.y : y,
-                                                                                  self.word_embedding: cr.getEmbeddingMatrix()},
+                                                                                  self.word_embedding: self.__embedding_matrix},
                                                                  name='valid_function')
         return test_function, (index_x, y)
     

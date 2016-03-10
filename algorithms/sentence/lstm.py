@@ -9,8 +9,8 @@ from algorithms.util import numpy_floatX
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-from algorithms.layers.lstm_layer import lstm_layer
-from algorithms.layers.dropout_layer import dropout_layer
+from algorithms.layers.LSTMLayer import LSTMLayer
+from algorithms.layers.DropoutLayer import DropoutLayer
 from algorithms.util import getError
 
 from config import globalFloatType
@@ -61,7 +61,8 @@ class lstm(algorithm):
         proj = self.get_lstm_output(proj, self.mask)
         
         if options['use_dropout']:
-            proj = dropout_layer(proj, self.use_noise, trng)
+            drop_out_layer = DropoutLayer()
+            proj = drop_out_layer.getOutput(proj, self.use_noise, trng)
     
         proj = tensor.dot(proj, tparams['U']) + tparams['b']
 #         pred = tensor.nnet.softmax(tensor.dot(proj, tparams['U']) + tparams['b'])
@@ -74,12 +75,11 @@ class lstm(algorithm):
     
     def connect_layers(self, emb, mask, dim_proj, \
                        tparams, activation_function=tensor.nnet.sigmoid):
-        lstm_encoder = lstm_layer(emb, mask=mask, \
-                                   dim_proj=dim_proj, \
+        lstm_encoder = LSTMLayer(dim_proj=dim_proj, \
                                    params=tparams, \
                                    prefix="lstm",
                                    activation_function=tensor.nnet.sigmoid)
-        proj = lstm_encoder.output
+        proj = lstm_encoder.getOutput(emb, mask=mask)
         return proj
     
     def get_lstm_output(self, proj, mask):

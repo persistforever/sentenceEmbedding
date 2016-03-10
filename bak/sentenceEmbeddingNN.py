@@ -6,7 +6,6 @@ import numpy
 import config
 
 class SentenceEmbeddingNN:
-    
     def __init__(self,
                           corpus,
                           docSentenceCount,

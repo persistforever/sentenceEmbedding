@@ -9,7 +9,7 @@ def train(cr, param_path, model, batchSize=5, save_freq=10, \
         cr.shuffle()
     train_model, n_batches, clear_func = model.getTrainingFunction(cr, batchSize=batchSize)
     valid_model = model.getValidingFunction(cr)
-    test_model, (test_x, test_y) = model.getTestingFunction(cr)
+    test_model, origin_data, true_label = model.getTestingFunction(cr)
     print "Start to train."
     epoch = 0
     n_epochs = 1000
@@ -31,12 +31,12 @@ def train(cr, param_path, model, batchSize=5, save_freq=10, \
         
         print "Now testing model."
         
-        cost , pred_y = test_model()
+        cost, pred_label = test_model()
         
         print "Test Error: ", param_path, " -> ", str(cost)
         
-        if shuffle and epoch < n_epochs:
-            cr.shuffle()
-            clear_func()
-            train_model, n_batches, clear_func = model.getTrainFunction(cr, cr_scope, batchSize=batchSize)
-#             exit()
+        for o, true_l, pred_l in zip(origin_data, true_label, pred_label):
+            print "%s\t|\t%s\t|\t%s" % (str(o), str(true_l), str(pred_l))
+        
+        
+        

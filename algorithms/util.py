@@ -1,7 +1,8 @@
 import theano
 from theano import tensor as T
 import numpy
-from theano import config
+
+import config
 
 def getError(m1, m2, errorType="RMSE"):
     error = None
@@ -19,10 +20,18 @@ def getError(m1, m2, errorType="RMSE"):
     return error
 
 def numpy_floatX(data):
-    return numpy.asarray(data, dtype=config.floatX)
+    return numpy.asarray(data, dtype=config.globalFloatType())
 
 def ortho_weight(ndim):
     W = numpy.random.randn(ndim, ndim)
     u, s, v = numpy.linalg.svd(W)
-    return u.astype(config.floatX)
+    return u.astype(config.globalFloatType())
 
+def uniform_random_weight(height, width, bound, dtype=config.globalFloatType()):
+    if bound < 0:
+        bound = -bound
+    rng = numpy.random.RandomState(123)
+    return rng.uniform(low=-bound, high=bound, \
+                        size=(height, width), \
+                        dtype=dtype
+                    )

@@ -1,99 +1,68 @@
-from bak.loadDialog import CorpusReader
-from measure import searchNeighbour2, train, chaos, loadParamsVal
-
+from task.train import train
+from util.parameter_operation import loadParamsVal
+from dataloader.load_data import CorpusReaderDialogPair
 import sys
 if __name__ == '__main__':
-    dataset = "kefu"
+    dataset = "plp"
     data_folder = "data/" + dataset
-    text_file = data_folder + "/text"
-    w2v_file = data_folder + "/w2vFlat"
-#     w2v_file = "data/xianliao/w2vFlat"
+    dataset_file = data_folder + "/dialog"
     stopwords_file = "data/punct"
-    
-    print "dataset: ", dataset
+    dict_file = data_folder + "/dict"
+    charset = "gbk"
+    word_embedding_file = "data/plp.word.vec.small"
     print "data_folder: ", data_folder
-    print "text_file : ", text_file
-    print "w2v_file : ", w2v_file
+    print "dataset_file: ", dataset_file
     print "stopwords_file: ", stopwords_file
+    print "dict_file: ", dict_file
+    print "word_embedding_file: ", word_embedding_file
+    print "charset: ", charset
     
-    cr = CorpusReader(2, 1, text_file, stopwords_file, w2v_file)
-    cr_scope = [0, 1000]
-    batchSize = 5
-    save_freq = 100
+#     w2v_file = data_folder + "/w2vFlat"
+#     w2v_file = "data/xianliao/w2vFlat"
+    
+#     print "text_file : ", text_file
+#     print "w2v_file : ", w2v_file
+    
+    from dataloader.load_data import CorpusReaderSentence
+    cr = CorpusReaderDialogPair(dataset_file, stopword_file=stopwords_file, \
+                      dict_file=dict_file, word_embedding_file=word_embedding_file, \
+                       train_valid_test_rate=[0.8, 0.1, 0.1], \
+                       charset=charset, maxSentenceWordNum=20, minSentenceWordNum=1)
+#     cr_scope = [0, 9999999999]
+    batchSize = 2
+    save_freq = 1
     param_path = None
     model = None
     shuffle = False
+    
     if len(sys.argv) < 2:
-        alg = "negativeSamplingShuffleMulticonvWithHiddenAverageMode"
+        alg = "cnn"
     else:
         alg = sys.argv[1]
-    if(alg == "averageHidden"):
-        from algorithms.dialog.dialogEmbeddingSentenceHiddenAverage import sentenceEmbeddingHiddenAverage
-        param_path = data_folder + "/model/average_hidden.model"
+    if(alg == "cnn"):
+        param_path = data_folder + "/model/dialog/cnn.model"
         params = loadParamsVal(param_path)
-        model = sentenceEmbeddingHiddenAverage(params)
-    elif(alg == "average"):
-        from algorithms.dialog.dialogEmbeddingSentenceDirectAverage import sentenceEmbeddingDirectAverage
-        param_path = data_folder + "/model/average.model"
+        from algorithms.dialog.cnn_single import cnn_single
+        word_embedding_dim = 100
+        model = cnn_single(word_embedding_dim=word_embedding_dim, ydim=100, \
+                           embedding_matrix=cr.getEmbeddingMatrix(), \
+                           size=[1024, 3, word_embedding_dim], input_params=params)
+    elif(alg == "lstm"):
+        param_path = data_folder + "/model/dialog/lstm.model"
         params = loadParamsVal(param_path)
-        model = sentenceEmbeddingDirectAverage(params)
-    elif(alg == "direct"):
-        from algorithms.dialog.dialogEmbeddingSentenceDirect import sentenceEmbeddingDirect
-        param_path = data_folder + "/model/direct.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingDirect(params)
-    elif(alg == "negativeSampling"):
-        from algorithms.dialog.dialogEmbeddingSentenceDirectNegativeSampling import sentenceEmbeddingDirectNegativeSampling
-        param_path = data_folder + "/model/direct_negative.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingDirectNegativeSampling(params)
-    elif(alg == "negativeSamplingHidden"):
-        from algorithms.dialog.dialogEmbeddingSentenceHiddenNegativeSampling import sentenceEmbeddingHiddenNegativeSampling
-        param_path = data_folder + "/model/hidden_negative.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingHiddenNegativeSampling(params)
-    elif(alg == "negativeSamplingMulticonvWithHidden"):
-        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
-        param_path = data_folder + "/model/hidden_negative_multiconv.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, sentenceLayerNodesNum=[150, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)])
-        batchSize = 200
-        save_freq = 10
-    elif(alg == "negativeSamplingShuffleMulticonvWithHidden"):
-        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
-        param_path = data_folder + "/model/hidden_negative_shuffle_multiconv.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, sentenceLayerNodesNum=[1000, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)])
-        batchSize = 200
-        save_freq = 10
-        shuffle = True
-    elif(alg == "negativeSamplingShuffleMulticonvWithHiddenAverageMode"):
-        from algorithms.dialog.dialogEmbeddingSentenceMulticonvHiddenNegativeSampling import sentenceEmbeddingMulticonvHiddenNegativeSampling
-        param_path = data_folder + "/model/hidden_negative_shuffle_multiconv_average_mode.model"
-        params = loadParamsVal(param_path)
-        model = sentenceEmbeddingMulticonvHiddenNegativeSampling(params, \
-                                                                 sentenceLayerNodesNum=[1000, 120], sentenceLayerNodesSize=[(2, 200), (3, 1)], mode="average_inc_pad")
-        batchSize = 200
-        save_freq = 10
-        shuffle = True
-    elif(alg == "justAverage"):
-        from algorithms.dialog.dialogEmbeddingSentenceJustAverage import sentenceEmbeddingJustAverage
-        param_path = data_folder + "/model/just_average.model"
-        params = None
-        model = sentenceEmbeddingJustAverage(params)
-    
+        from algorithms.dialog.lstm_single import lstm_single
+        word_embedding_dim = 100
+        model = lstm_single(word_embedding_dim=word_embedding_dim, ydim=100, \
+                           embedding_matrix=cr.getEmbeddingMatrix(), \
+                           size=[1024, 3, word_embedding_dim], input_params=params)
+        
+        
     print "param_path: ", param_path
-    
     if(len(sys.argv) < 3):
-#         chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-        train(cr, cr_scope,param_path, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
+        train(cr, param_path, model, batchSize=batchSize, save_freq=save_freq)
     else:
         mode = sys.argv[2]
         print "mode: ", mode
-        if(mode == "test"):
-            chaos(cr, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model)
-        elif(mode == "searchNeighbour"):
-            searchNeighbour2(cr, model)
-        elif(mode == "train"):
-            train(cr, cr_scope, dataset, data_folder, text_file, w2v_file, stopwords_file, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
+        if(mode == "train"):
+            train(cr, param_path, params, model, batchSize=batchSize, save_freq=save_freq, shuffle=shuffle)
     print "All finished!"

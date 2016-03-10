@@ -9,12 +9,8 @@ import heapq
 import cPickle
 from sklearn import metrics
 import time
-import sys
-def train(cr, cr_scope, param_path, model, batchSize=5, save_freq=10, \
-          shuffle=False):
-    if shuffle:
-        cr.shuffle()
-    train_model, n_batches, clear_func = model.getTrainingFunction(cr, cr_scope, batchSize=batchSize)
+def train(cr, param_path, model, batchSize=5, save_freq=10):
+    train_model, n_batches, clear_func = model.getTrainingFunction(cr, batchSize=batchSize)
     valid_model = model.getValidingFunction(cr)
     test_x, test_y, test_model = model.getTestingFunction(cr)
     print "Start to train."

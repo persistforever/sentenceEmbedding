@@ -1,6 +1,6 @@
 # coding=utf-8
 # -*- coding: utf-8 -*-
-from algorithms.layers.mlp import HiddenLayer
+from algorithms.layers.FullyConnectedLayer import HiddenLayer
 from theano import tensor as T, printing
 import theano
 import numpy

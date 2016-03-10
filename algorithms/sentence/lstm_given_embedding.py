@@ -8,8 +8,8 @@ import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 from algorithms.util import numpy_floatX
-from algorithms.layers.lstm_layer import lstm_layer
-from algorithms.layers.dropout_layer import dropout_layer
+from algorithms.layers.LSTMLayer import LSTMLayer
+from algorithms.layers.DropoutLayer import DropoutLayer
 from algorithms.util import getError
 from lstm import lstm
 
@@ -66,7 +66,8 @@ class lstm_given_embedding(lstm):
         proj = self.get_lstm_output(proj, self.mask)
         
         if options['use_dropout']:
-            proj = dropout_layer(proj, self.use_noise, trng)
+            dropout_layer = DropoutLayer()
+            proj = dropout_layer.getOutput(proj, self.use_noise, trng)
     
         proj = tensor.dot(proj, tparams['U']) + tparams['b']
 #         pred = tensor.nnet.softmax(tensor.dot(proj, tparams['U']) + tparams['b'])
@@ -79,12 +80,11 @@ class lstm_given_embedding(lstm):
     
     def connect_layers(self, emb, mask, dim_proj, \
                        tparams, activation_function=tensor.nnet.sigmoid):
-        lstm_encoder = lstm_layer(emb, mask=mask, \
-                                   dim_proj=dim_proj, \
+        lstm_encoder = LSTMLayer(dim_proj=dim_proj, \
                                    params=tparams, \
                                    prefix="lstm",
                                    activation_function=tensor.nnet.sigmoid)
-        proj = lstm_encoder.output
+        proj = lstm_encoder.getOutput(emb, mask=mask)
         return proj
     
     
